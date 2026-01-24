@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>how to get into ml / dl properly</title>
+
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-4VP1VKLPKJ"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag("js", new Date());
+      gtag("config", "G-4VP1VKLPKJ");
+    </script>
+  </head>
+
+  <body class="bg-orange-50 text-gray-900 w-full max-w-3xl mx-auto px-5 md:px-0 pb-20">
+
+    <header class="mt-12">
+      <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
+        How I'd learn ML in 2026 (if I could start over) 
+      </h1>
+      <p class="text-sm text-gray-600 mt-4 italic">January 12, 2026 • 8 min read</p>
+    </header>
+
+    <article class="mt-10 space-y-8 text-lg text-gray-800 leading-relaxed font-serif">
+
+      <section class="space-y-4">
+        <p>
+          I am into alot of things rl, dl, now a bit into gpu's as well, currently a research intern, web dev as well.
+          So will keep it short & ofc will start from the start & will mention some of the books that are pure gold.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="text-2xl font-serif font-bold text-gray-950">
+          maths (few things over & over again)
+        </h2>
+
+        <p>
+          Maths is everywhere in this, from the transformers to rl to regression models.
+          But there are few concepts that will show up like 90% of the times.
+          Here are some of the topics :
+          dot product, covariance matrix, eigen vectors, probabilistic distribution functions,
+          KL divergence, entropy, cross entropy, differentiation basics like what it means & basic chain rule,
+          normal distribution, famous plots & basic statistics.
+        </p>
+
+        <p>
+          Now this can expand but instead of like covering things at once,
+          i will choose again that method of learning things when they will show up.
+          I appreciate this method cause i can see the effect up close of like maths is just an tool
+          & when i can see how that tool will help us solve an problem so that makes the process more interesting in my opinion.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="text-2xl font-serif font-bold text-gray-950">
+          books to follow
+        </h2>
+
+        <p>
+          DL by goodfellow then Hands on ML by aurelion green.
+          So i haven't completed the goodfellow book but i know cause i read some sections,
+          what i liked about that books is that it starts with the linear algebra & probability
+          and information theory that too is in good level.
+        </p>
+
+        <p>
+          But after that the flow shifts to deep networks instantly which is where the
+          "hands on ml" comes into play.
+          It is solid structured like how the things should be so firstly it covers the ml algos
+          then dl then diffusion models then a bit of rl & deployment as well.
+        </p>
+
+        <p>
+          That book is not that math heavy but it gives you a scope of like how the domain pretty much looks like.
+          After that its either a researcher or a developer with a subdomain like you want to go into cuda shit or rl or ++.
+          But the goal here is to get an idea, also the language doesn't matter concept matters,
+          like i can switch from python to lua as easily as tensorflow to pytorch.
+        </p>
+
+        <p>
+          Now ofc don't give me that shitty argument that there is a depth in languages
+          but mf you have google to understand things on the go.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="text-2xl font-serif font-bold text-gray-950">
+          build end to end projects
+        </h2>
+
+        <p>
+          Yea this is very important to get internships as a beginner or like have an idea of the whole ecosystem
+          where deployment plays a major role.
+          After you go through the book you will be comfortable in the models & languages like pytorch,
+          now its the right time to get a bit into the RAG side as well.
+        </p>
+
+        <p>
+          Now that's a slipperly slope but basic idea of langchain & langgraph to test things
+          if you enjoy that then you can ofc go into that subdomain.
+          There is a youtube tutorial on that maybe i'll attach the link later so cover that too.
+        </p>
+
+        <p>
+          Now the main thing is tools like Grafana, promethus, AWS instances & s3 buckets,
+          docker, kubernetes, terraform & basically to get an idea of how real world deployment happens.
+          Here we will keep the model simple cause we want to learn how the things integrate.
+        </p>
+
+        <p>
+          An end to end model doesn't need the model to be a huge neural network
+          it just needs to get the job done whether its prediction or categorization.
+          I am covering these things too as of now, ik im late but still.
+        </p>
+
+        <p>
+          Best thing try to learn from open source repos which contains good documentation
+          which leads to the next point.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="text-2xl font-serif font-bold text-gray-950">
+          repo for everything
+        </h2>
+
+        <p>
+          Keep your github clean, one mistake i did was that i coded or learned things daily
+          but i didn't focused on keeping it structured in a repo.
+          This gives a clean & impressive looks, so if you start learning a book
+          then create a repo & document things nicely and yup that will help,
+          its subtle but there is no harm in this.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="text-2xl font-serif font-bold text-gray-950">
+          keep in mind this is harder than web dev
+        </h2>
+
+        <p>
+          I have to say this, web dev is repetitive but there is money there in the early stages.
+          Again this is what i have observed like after a certain time web dev is like doing same thing again & again
+          which i agree might happen with you in ml but this domain is literally growing & will grow in the upcoming years
+          like every months we get dozens of paper with new advancements.
+        </p>
+
+        <p>
+          So you can try to get into freelance as well where you can build ML + classic web dev shit
+          and i have heard that this pays good.
+          I haven't done so no experience but i've heard.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          That's pretty much it, now don't dm me asking for questions bro like legit.
+          You should firstly go and checkout some of my blogs here :
+          <a href="https://tmwork.vercel.app/blog.html" class="text-orange-600 underline">
+            https://tmwork.vercel.app/blog.html
+          </a>
+        </p>
+
+        <p>
+          two of em - ml one & homl will answer some of your questions.
+          Rest try to join spaces & ask there, folks will easily guide you.
+          If you're pretty confused then you can dm but show fckin respect,
+          i don't owe you fckin answers.
+          So be nice & i'll be nice as well.
+        </p>
+
+        <p>
+          Till then keep learning :)
+        </p>
+      </section>
+
+    </article>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
