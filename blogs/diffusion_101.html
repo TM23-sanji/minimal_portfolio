@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>notes on diffusion models</title>
+
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false }
+          ]
+        });
+      });
+    </script>
+  </head>
+
+  <body class="bg-orange-50 text-gray-900 w-full max-w-3xl mx-auto px-5 md:px-0 pb-20">
+
+    <header class="mt-12">
+      <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
+        diffusion models — working notes
+      </h1>
+      <p class="text-sm text-gray-600 mt-4 italic">
+        rough notes while reading diffusion papers • jan 2026
+      </p>
+    </header>
+
+    <article class="mt-10 space-y-10 text-lg text-gray-800 leading-relaxed font-serif">
+
+      <section class="space-y-4">
+        <p>
+          consider these resources i found through will’s book :
+        </p>
+
+        <ul class="list-disc list-inside space-y-2">
+          <li>
+            <a class="text-orange-600 underline" href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">
+              lilian weng — diffusion models
+            </a>
+          </li>
+          <li>
+            <a class="text-orange-600 underline" href="https://medium.com/@gitau_am/a-friendly-introduction-to-denoising-diffusion-probabilistic-models-cc76b8abef25">
+              friendly intro to ddpm
+            </a>
+          </li>
+          <li>
+            <a class="text-orange-600 underline" href="https://huggingface.co/blog/annotated-diffusion">
+              huggingface annotated diffusion
+            </a>
+          </li>
+          <li>
+            <a class="text-orange-600 underline" href="https://yang-song.net/blog/2021/score/">
+              yang song — score-based models
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          some questions i have before reading those diffusion papers :
+        </p>
+        <p>
+          what diffusion actually solves that transformers can’t? what do they actually predict?
+          how do they generalize so well on images from just text prompts?
+          how is this diffusion related to the physical diffusion process?
+          what does it mean that they are inspired by non-equilibrium thermodynamics?
+          why so much focus on markov chains, quasi-static tricks, Z, and conditional / posterior probabilities?
+          will add more to this.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          in this one we go into <strong>deep unsupervised learning using non-equilibrium thermodynamics</strong>.
+          idk where to begin so let’s begin by initializing some params.
+        </p>
+
+        <ul class="list-disc list-inside space-y-2">
+          <li><strong>p(x) is the goal:</strong> probability distribution of real data (e.g. all possible cat images).</li>
+          <li><strong>θ:</strong> parameters of the neural network.</li>
+        </ul>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          overview: start with a clean image $x^0$. add noise in $T$ steps until it becomes $x^T$,
+          basically a blurry mess.
+        </p>
+
+        <p>
+          the model does not jump directly from $x^T$ to $x^0$.
+          instead it predicts the <strong>immediately preceding step</strong> $x^{t-1}$.
+        </p>
+
+        <p>
+          adding random noise does not destroy structure immediately.
+          add 10% noise to a dog image and the dog-ness is still there.
+          noise is patternless; data has structure.
+        </p>
+
+        <p>
+          the model learns to separate random noise from structured signal
+          (eyes come in pairs, edges align, textures repeat).
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          the model takes $x^{(t)}$ and timestep $t$ and predicts a Gaussian distribution
+          for $x^{(t-1)}$.
+          since we constructed the forward process ourselves, we know the true $x^{(t-1)}$.
+          we compare distributions using <strong>KL divergence</strong>.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          thermodynamics intuition:
+          in physics, equilibrium means max entropy.
+          the forward process intentionally destroys structure until we reach a simple Gaussian.
+        </p>
+
+        <p>
+          diffusion models learn to run the process backward,
+          pulling the system from high entropy back into structure.
+          impossible in the real world, learnable with gradients.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          markov chains:
+          in the forward chain $q$, each state depends only on the previous one.
+          the model learns a second markov chain $p_\theta$ that reverses each step.
+        </p>
+
+        <p>
+          forward never comes back; reverse explicitly learns how to undo each transition.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          forward diffusion process:
+          $q(x)$ is real data.
+          we sample $x_0$ and apply a gaussian diffusion process.
+        </p>
+
+        <p>
+          each step adds small gaussian noise.
+          if steps are small enough (quasi-static),
+          the reverse process is guaranteed to be gaussian too.
+        </p>
+
+        <p>
+          but the true reverse distribution depends on $q(x_0)$,
+          which is intractable.
+          instead, the network predicts only mean and covariance.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          why is it still complex if it’s gaussian?
+          because mean and covariance depend on the input image.
+          dog-like noise should point toward dogs, house-like noise toward houses.
+        </p>
+
+        <p>
+          learning that function is the hard part.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          the network is a function of $x^{(t)}$ and $t$.
+          early timesteps have low noise; later ones have high noise.
+        </p>
+
+        <p>
+          $$ 
+          q(\mathbf{x}_t \mid \mathbf{x}_{t-1}) =
+          \mathcal{N}(\mathbf{x}_t; \sqrt{1-\beta_t}\mathbf{x}_{t-1}, \beta_t\mathbf{I})
+          $$
+        </p>
+
+        <p>
+          the full trajectory probability is just the product of each step.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          intuition for $\beta_t$:
+          step size of randomness.
+          $1-\beta_t$ is signal preserved.
+        </p>
+
+        <ul class="list-disc list-inside space-y-2">
+          <li>$q(x_0)$: complex multi-modal data distribution</li>
+          <li>$q(x_t)$: blurred but still structured distribution</li>
+          <li>$q(x_t \mid x_{t-1})$: simple gaussian rule</li>
+        </ul>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          we tell the network:
+          look at $x_t$ and learn the inverse of the gaussian step that created it.
+        </p>
+
+        <p>
+          each pixel is scaled by $\sqrt{1-\beta_t}$,
+          noise is sampled per-pixel and scaled by $\sqrt{\beta_t}$.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          tractable means solvable.
+          quasi-static diffusion turns an impossible integral
+          into predicting two numbers.
+        </p>
+
+        <p>
+          $$
+          \alpha_t = 1 - \beta_t \quad ; \quad
+          \bar{\alpha}_t = \prod_{i=1}^t \alpha_i
+          $$
+        </p>
+
+        <p>
+          $$
+          \mathbf{x}_t = \sqrt{\bar{\alpha}_t}\mathbf{x}_0
+          + \sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}
+          $$
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          usually:
+        </p>
+        <p>
+          $$
+          \beta_1 < \beta_2 < \dots < \beta_T \quad ; \quad
+          \bar{\alpha}_1 > \dots > \bar{\alpha}_T
+          $$
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          stochastic gradient langevin dynamics —
+          need to read more 💀
+        </p>
+
+        <p>
+          reverse process starts from pure gaussian noise:
+        </p>
+
+        <p>
+          $$
+          p(x;\mu,\sigma^2)=
+          \frac{1}{\sqrt{2\pi}\sigma}
+          \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+          $$
+        </p>
+      </section>
+
+      <section>
+        <p>
+          . . . to be continued
+        </p>
+      </section>
+
+    </article>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
