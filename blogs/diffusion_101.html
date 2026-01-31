@@ -28,10 +28,10 @@
 
     <header class="mt-12">
       <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
-        diffusion models — working notes
+        Diffusion models — Langevin & SDE
       </h1>
       <p class="text-sm text-gray-600 mt-4 italic">
-        rough notes while reading diffusion papers • jan 2026
+        connecting langevin diffusion, SDEs, and diffusion models • jan 2026
       </p>
     </header>
 
@@ -39,250 +39,255 @@
 
       <section class="space-y-4">
         <p>
-          consider these resources i found through will’s book :
-        </p>
-
-        <ul class="list-disc list-inside space-y-2">
-          <li>
-            <a class="text-orange-600 underline" href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">
-              lilian weng — diffusion models
-            </a>
-          </li>
-          <li>
-            <a class="text-orange-600 underline" href="https://medium.com/@gitau_am/a-friendly-introduction-to-denoising-diffusion-probabilistic-models-cc76b8abef25">
-              friendly intro to ddpm
-            </a>
-          </li>
-          <li>
-            <a class="text-orange-600 underline" href="https://huggingface.co/blog/annotated-diffusion">
-              huggingface annotated diffusion
-            </a>
-          </li>
-          <li>
-            <a class="text-orange-600 underline" href="https://yang-song.net/blog/2021/score/">
-              yang song — score-based models
-            </a>
-          </li>
-        </ul>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          some questions i have before reading those diffusion papers :
-        </p>
-        <p>
-          what diffusion actually solves that transformers can’t? what do they actually predict?
-          how do they generalize so well on images from just text prompts?
-          how is this diffusion related to the physical diffusion process?
-          what does it mean that they are inspired by non-equilibrium thermodynamics?
-          why so much focus on markov chains, quasi-static tricks, Z, and conditional / posterior probabilities?
-          will add more to this.
+          There are basically some sections i want to connect & establish a link btw them.
+          First of them being langevin diffusion, see diffusion model rely on Stochastic differential equations & langevin is a specific SDE which is fundamental to understand diffusion.
+          Another one is Ito-SDE we’ll cover it too.
         </p>
       </section>
 
       <section class="space-y-4">
-        <p>
-          in this one we go into <strong>deep unsupervised learning using non-equilibrium thermodynamics</strong>.
-          idk where to begin so let’s begin by initializing some params.
-        </p>
+        <h2 class="font-bold text-xl">What is Langevin diffusion??</h2>
 
-        <ul class="list-disc list-inside space-y-2">
-          <li><strong>p(x) is the goal:</strong> probability distribution of real data (e.g. all possible cat images).</li>
-          <li><strong>θ:</strong> parameters of the neural network.</li>
-        </ul>
-      </section>
-
-      <section class="space-y-4">
         <p>
-          overview: start with a clean image $x^0$. add noise in $T$ steps until it becomes $x^T$,
-          basically a blurry mess.
+          Langevin diffusion has been discovered in physics to describe the motion of particles driven by random and deterministic forces.
+          Due to the random forces, it is a <strong>stochastic process</strong> that in generative AI describes the evolution of a probability distribution over time.
         </p>
 
         <p>
-          the model does not jump directly from $x^T$ to $x^0$.
-          instead it predicts the <strong>immediately preceding step</strong> $x^{t-1}$.
-        </p>
-
-        <p>
-          adding random noise does not destroy structure immediately.
-          add 10% noise to a dog image and the dog-ness is still there.
-          noise is patternless; data has structure.
-        </p>
-
-        <p>
-          the model learns to separate random noise from structured signal
-          (eyes come in pairs, edges align, textures repeat).
+          Langevin diffusion is often used as a way to sample from a probability distribution p(x).
+          Think of p(x) as a very complex high dimensional distribution that represents a dataset.
         </p>
       </section>
 
       <section class="space-y-4">
-        <p>
-          the model takes $x^{(t)}$ and timestep $t$ and predicts a Gaussian distribution
-          for $x^{(t-1)}$.
-          since we constructed the forward process ourselves, we know the true $x^{(t-1)}$.
-          we compare distributions using <strong>KL divergence</strong>.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          thermodynamics intuition:
-          in physics, equilibrium means max entropy.
-          the forward process intentionally destroys structure until we reach a simple Gaussian.
-        </p>
+        <p>Gaussian mixture is given by a weighted sum of Gaussian distributions:</p>
 
         <p>
-          diffusion models learn to run the process backward,
-          pulling the system from high entropy back into structure.
-          impossible in the real world, learnable with gradients.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          markov chains:
-          in the forward chain $q$, each state depends only on the previous one.
-          the model learns a second markov chain $p_\theta$ that reverses each step.
-        </p>
-
-        <p>
-          forward never comes back; reverse explicitly learns how to undo each transition.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          forward diffusion process:
-          $q(x)$ is real data.
-          we sample $x_0$ and apply a gaussian diffusion process.
-        </p>
-
-        <p>
-          each step adds small gaussian noise.
-          if steps are small enough (quasi-static),
-          the reverse process is guaranteed to be gaussian too.
-        </p>
-
-        <p>
-          but the true reverse distribution depends on $q(x_0)$,
-          which is intractable.
-          instead, the network predicts only mean and covariance.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          why is it still complex if it’s gaussian?
-          because mean and covariance depend on the input image.
-          dog-like noise should point toward dogs, house-like noise toward houses.
-        </p>
-
-        <p>
-          learning that function is the hard part.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          the network is a function of $x^{(t)}$ and $t$.
-          early timesteps have low noise; later ones have high noise.
-        </p>
-
-        <p>
-          $$ 
-          q(\mathbf{x}_t \mid \mathbf{x}_{t-1}) =
-          \mathcal{N}(\mathbf{x}_t; \sqrt{1-\beta_t}\mathbf{x}_{t-1}, \beta_t\mathbf{I})
+          $$
+          p(\mathbf{x}) = \sum\limits_{j=1}^{n}q_j \mathcal{N}(\mathbf{x};\mu_i,\Sigma_{i}), \quad
+          \text{where } q_j\in\mathbb{R},\sum\limits_{j=1}^{n}q_j = 1,
+          \mu_i\in\mathbb{R}^2,\Sigma_{i}\in\mathbb{R}^{2\times 2}
           $$
         </p>
 
         <p>
-          the full trajectory probability is just the product of each step.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          intuition for $\beta_t$:
-          step size of randomness.
-          $1-\beta_t$ is signal preserved.
-        </p>
-
-        <ul class="list-disc list-inside space-y-2">
-          <li>$q(x_0)$: complex multi-modal data distribution</li>
-          <li>$q(x_t)$: blurred but still structured distribution</li>
-          <li>$q(x_t \mid x_{t-1})$: simple gaussian rule</li>
-        </ul>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          we tell the network:
-          look at $x_t$ and learn the inverse of the gaussian step that created it.
-        </p>
-
-        <p>
-          each pixel is scaled by $\sqrt{1-\beta_t}$,
-          noise is sampled per-pixel and scaled by $\sqrt{\beta_t}$.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          tractable means solvable.
-          quasi-static diffusion turns an impossible integral
-          into predicting two numbers.
+          namely the density, log-density, score (gradient of log_density), and gradient of the density.
         </p>
 
         <p>
           $$
-          \alpha_t = 1 - \beta_t \quad ; \quad
-          \bar{\alpha}_t = \prod_{i=1}^t \alpha_i
-          $$
-        </p>
+          \begin{aligned}
+          \mathcal{N}(x;\mu,\Sigma)
+          &= \frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}
+          \exp\!\left(-\frac{1}{2}(x-\mu)^\top \Sigma^{-1}(x-\mu)\right), \\[6pt]
 
-        <p>
-          $$
-          \mathbf{x}_t = \sqrt{\bar{\alpha}_t}\mathbf{x}_0
-          + \sqrt{1-\bar{\alpha}_t}\boldsymbol{\epsilon}
+          \log \mathcal{N}(x;\mu,\Sigma)
+          &= -\frac{d}{2}\log(2\pi)
+          - \frac{1}{2}\log|\Sigma|
+          - \frac{1}{2}(x-\mu)^\top \Sigma^{-1}(x-\mu), \\[6pt]
+
+          \nabla_x \log \mathcal{N}(x;\mu,\Sigma)
+          &= -\Sigma^{-1}(x-\mu), \\[6pt]
+
+          \nabla_x \mathcal{N}(x;\mu,\Sigma)
+          &= -\mathcal{N}(x;\mu,\Sigma)\,\Sigma^{-1}(x-\mu).
+          \end{aligned}
           $$
         </p>
       </section>
 
       <section class="space-y-4">
         <p>
-          usually:
+          Now in p(x) peaks are high-probability data (like clear images of cats) and the valleys are low-probability noise,
+          the gradient of p(x) acts like a <strong>compass</strong>.
+          So we use the score to "push" random noise toward the data peaks basically gradient ascent.
         </p>
+
+        <p>
+          Why log is just mathematical convenience cause prob at points might be very low like in orders of -50 then that exponential term removal & since logarithm is a <strong>monotonically increasing function</strong>.
+          This means that the peak of p(x) is in the exact same location as the peak of log p(x).
+        </p>
+
         <p>
           $$
-          \beta_1 < \beta_2 < \dots < \beta_T \quad ; \quad
-          \bar{\alpha}_1 > \dots > \bar{\alpha}_T
+          \nabla_x \log p(x)
+          = \frac{\nabla_x p(x)}{p(x)}
+          $$
+        </p>
+
+        <img src="../media/diffusion_101/download.png" class="rounded-lg shadow-md" />
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          Langevin Diffusion describes a <strong>Stochastic Differential Equation</strong>.
+        </p>
+
+        <p>
+          $$
+          dX_t = \nabla\log p(X_t) + \sqrt{2}W_t
+          $$
+        </p>
+
+        <p>
+          $$
+          X_{t+s} = X_{t}+s\nabla\log p(X_{t})+\sqrt{2s}\epsilon,
+          \quad \epsilon\sim\mathcal{N}(0,\mathbf{I}_d)
+          $$
+        </p>
+
+        <p>
+          Intuitively, the Langevin diffusion is gradient ascent maximizing the log-probability injected with random Gaussian noise.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          Now the main thing is that actually we don’t know gradient for the clean data so now we’ll train a neural network (the <strong>Score Estimator</strong>)
+          to predict the gradient of the noisy data.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="font-bold text-xl">What the hell is this ItoSDE??</h2>
+
+        <p>
+          SDE describes how one particle moves, if you simulate 10,000 particles at once,
+          the density of where those particles end up will eventually match the probability distribution p(x).
+        </p>
+
+        <img src="../media/diffusion_101/download 1.png" class="rounded-lg shadow-md" />
+        <img src="../media/diffusion_101/download.png" class="rounded-lg shadow-md" />
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          Brownian motion:
+        </p>
+
+        <p>
+          $$
+          W_{t+s} = W_{t} +\sqrt{s} \epsilon,\quad \epsilon\sim\mathcal{N}(0,1)
+          $$
+        </p>
+
+        <p>
+          ODE vs SDE:
+        </p>
+
+        <p>
+          $$
+          \frac{d}{dt}\mathbf{x}(t) = f(\mathbf{x}(t),t)
+          $$
+        </p>
+
+        <p>
+          $$
+          dX(t) = f(X_t,t)dt+g(t)dW_t
           $$
         </p>
       </section>
 
       <section class="space-y-4">
         <p>
-          stochastic gradient langevin dynamics —
-          need to read more 💀
+          $$
+          X_{t+s}|X_t\sim\mathcal{N}(X_{t}+s f(X_t,t),sg^2(t))
+          $$
         </p>
 
         <p>
-          reverse process starts from pure gaussian noise:
+          deterministic drift f describes the infinitesimal change in mean and the volatility function g describes the infinitesimal standard deviation.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          affine drift assumption:
         </p>
 
         <p>
           $$
-          p(x;\mu,\sigma^2)=
-          \frac{1}{\sqrt{2\pi}\sigma}
-          \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+          f(x,t)=a(t)x+b(t)
+          $$
+        </p>
+
+        <p>
+          $$
+          \mathbb{E}[X_t|X_0]
+          =\left(X_0+\int\limits_{0}^{t}\exp(-\int\limits_{0}^{s}a(r)dr)b(s)ds\right)
+          \exp\left(\int\limits_{0}^{t}a(s)ds\right)
+          $$
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          There are 3 frameworks to build SDEs for diffusion models:
+          variance-preserving, variance sub-preserving and variance-exploding.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          variance exploding:
+        </p>
+
+        <p>
+          $$
+          \mathbb{E}[X_t|X_0]=X_0,\quad
+          \mathbb{V}[X_t|X_0]=\beta(t)
+          $$
+        </p>
+
+        <p>
+          $$
+          Y_t=\frac{X_t}{\sqrt{\beta(t)}}
+          $$
+        </p>
+
+        <img src="../media/diffusion_101/variance_sde.png" class="rounded-lg shadow-md" />
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          variance schedules:
+        </p>
+
+        <p>
+          $$
+          \sqrt{\beta(t)}=\sigma_{\text{min}}\left(\frac{\sigma_{\text{max}}}{\sigma_{\text{min}}}\right)^t
+          $$
+        </p>
+
+        <p>
+          $$
+          \beta(t)=\frac{1}{2}t^2(\beta_{\text{max}}-\beta_{\text{min}})+t\beta_{\text{min}}
+          $$
+        </p>
+
+        <img src="../media/diffusion_101/diffusion_variance.png" class="rounded-lg shadow-md" />
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          reverse-time SDE:
+        </p>
+
+        <p>
+          $$
+          d\bar{X}_t= [f(X_t,t)-g^2(t)\frac{\partial}{\partial x}\log p_{t}(\bar{X}_t)]dt + g(t)d\bar{W}_t
+          $$
+        </p>
+
+        <p>
+          $$
+          \bar{X}_{t-s} \approx \bar{X}_t +s\left[g^2(t)s_{\theta}(\bar{X}_t,t)-f(\bar{X}_t,t)\right]+\sqrt{s}g(t)\epsilon
           $$
         </p>
       </section>
 
       <section>
-        <p>
-          . . . to be continued
-        </p>
+        <p>. . . to be continued</p>
       </section>
 
     </article>
