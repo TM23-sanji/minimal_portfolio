@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tm | Timelapses</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --text: #ccc;
+            --text-main: #e0e0e0;
+            --text-light: #888;
+            --highlight-bg: #2a2a2a;
+            --highlight-border: #3a3a3a;
+        }
+
+        @font-face {
+            font-family: 'custom_mono';
+            src: url('https://fonts.gstatic.com/s/robotomono/v22/L0x5DF4xlVMF-BfR8bXMIjhGq3-cXbKDO1w.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'custom_mono', 'SF Mono', 'Consolas', 'Menlo', monospace;
+            font-size: 16px;
+            line-height: 1.7;
+            margin: 0;
+            display: flex;
+            padding: 3rem;
+        }
+
+        a {
+            color: var(--text);
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            transition: color 0.2s ease-in-out;
+        }
+
+        a:hover {
+            color: var(--text-main);
+        }
+
+        .sidebar {
+            width: 150px;
+            flex-shrink: 0;
+            padding-right: 2rem;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-nav a:before {
+            content: '>';
+            margin-right: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .main-content {
+            width: 100%;
+            padding-right: 260px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4rem;
+        }
+
+        header .logo {
+            font-weight: bold;
+        }
+
+        .content-section {
+            margin-top: 4rem;
+        }
+
+        .content-section h2 {
+            font-weight: normal;
+            font-size: 1em;
+            margin-bottom: 2rem;
+        }
+
+        /* Timelapse Grid Styles */
+        .timelapse-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1.5rem;
+            max-width: 800px;
+        }
+
+        .timelapse-item {
+            aspect-ratio: 1 / 1;
+            border: 1px solid var(--highlight-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-light);
+            background-color: transparent;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            border-radius: 4px;
+        }
+
+        .timelapse-item:hover {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            background-color: var(--highlight-bg);
+            transform: translateY(-4px);
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                padding-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                padding: 1.5rem;
+            }
+
+            .sidebar {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                margin-bottom: 2rem;
+            }
+
+            .sidebar-nav a {
+                margin-right: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            <a href="research.html">research</a>
+            <a href="books.html">books</a>
+            <a href="projects.html">projects</a>
+            <a href="resume.pdf">resume</a>
+            <a href='blog.html'>blogs</a>
+            <a href='open_source.html'>open source</a>
+            <a href='timelapse.html'>timelapse</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <a href="index.html" class="logo" style="text-decoration: none;">tm</a>
+        </header>
+
+        <section id="timelapses" class="content-section">
+            <h2>my timelapses &rarr;</h2>
+            <div class="timelapse-grid">
+                <a href="https://x.com/tm23twt/status/2019010389770723477" class="timelapse-item" target="_blank">1</a>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+
+</html>

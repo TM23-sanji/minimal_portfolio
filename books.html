@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,7 +47,7 @@
         a:hover {
             color: var(--text-main);
         }
-        
+
         .sidebar {
             width: 150px;
             flex-shrink: 0;
@@ -58,7 +59,7 @@
             text-decoration: none;
             margin-bottom: 0.5rem;
         }
-        
+
         .sidebar-nav a:before {
             content: '>';
             margin-right: 0.75rem;
@@ -80,7 +81,7 @@
         header .logo {
             font-weight: bold;
         }
-        
+
         .content-section {
             margin-top: 4rem;
         }
@@ -90,7 +91,7 @@
             font-size: 1em;
             margin-bottom: 2rem;
         }
-        
+
         .item-list {
             max-width: 750px;
         }
@@ -100,17 +101,17 @@
             margin-bottom: 1.5rem;
             align-items: flex-start;
         }
-        
+
         .list-item .name {
             width: 150px;
             flex-shrink: 0;
             color: var(--text-main);
         }
-        
+
         .list-item .desc {
             color: var(--text-light);
         }
-        
+
         .side-widget {
             position: fixed;
             top: 3rem;
@@ -132,16 +133,36 @@
         }
 
         @media (max-width: 1024px) {
-            .side-widget { display: none; }
-            .main-content { padding-right: 0; }
+            .side-widget {
+                display: none;
+            }
+
+            .main-content {
+                padding-right: 0;
+            }
         }
+
         @media (max-width: 768px) {
-            body { flex-direction: column; padding: 1.5rem; }
-            .sidebar { width: 100%; display: flex; flex-wrap: wrap; margin-bottom: 2rem; }
-            .sidebar-nav a { margin-right: 1.5rem; margin-bottom: 0.5rem; }
+            body {
+                flex-direction: column;
+                padding: 1.5rem;
+            }
+
+            .sidebar {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                margin-bottom: 2rem;
+            }
+
+            .sidebar-nav a {
+                margin-right: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <aside class="sidebar">
@@ -152,6 +173,7 @@
             <a href="resume.pdf">resume</a>
             <a href='blog.html'>blogs</a>
             <a href='open_source.html'>open source</a>
+            <a href='timelapse.html'>timelapse</a>
         </nav>
     </aside>
 
@@ -164,42 +186,43 @@
             <h2>bookshelf &rarr;</h2>
             <div class="item-list">
 
-                                                                                <div class="list-item">
+                <div class="list-item">
                     <div class="name">Maxim Lapan</div>
                     <div class="desc">
                         <span class="book-title">Hands on RL</span>
-                        Well-structured guide to the reinforcement learning covering all the essential topics. (600+ pages) <br>
+                        Well-structured guide to the reinforcement learning covering all the essential topics. (600+
+                        pages) <br>
                         - learning abt modern rl algos like GRPO, PPO, A2C, DDPG, TD3, SAC, etc
                     </div>
                 </div>
 
 
-                                                                <div class="list-item">
+                <div class="list-item">
                     <div class="name">Sebastian R.</div>
                     <div class="desc">
                         <span class="book-title">Build a Large language model from scratch ✅</span>
                         Brilliant book to help you understand and
- create your own GPT-like large language models (LLMs) from the ground up (250+ pages) <br>
-                        - learned abt novel components of LLM, fine & instruction tuning & working with data 
+                        create your own GPT-like large language models (LLMs) from the ground up (250+ pages) <br>
+                        - learned abt novel components of LLM, fine & instruction tuning & working with data
                     </div>
                 </div>
 
-                                                <div class="list-item">
+                <div class="list-item">
                     <div class="name">Tivadar Danka</div>
                     <div class="desc">
                         <span class="book-title">Mathematics of Machine Learning</span>
                         Master linear algebra, calculus & probability for ml (650+ pages) <br>
-                        - will learn how maths interlinks with ml :) 
+                        - will learn how maths interlinks with ml :)
                     </div>
                 </div>
 
 
-                                <div class="list-item">
+                <div class="list-item">
                     <div class="name">Jay Alammar</div>
                     <div class="desc">
                         <span class="book-title">Hands on Large language models ✅</span>
                         Exceptional guide to the world of language models (500+ pages) <br>
-                        - learned about LLM, prompt engineering, rag, fine tuning  
+                        - learned about LLM, prompt engineering, rag, fine tuning
                     </div>
                 </div>
 
@@ -216,27 +239,28 @@
                     <div class="name">Jake VanderPlas</div>
                     <div class="desc">
                         <span class="book-title">Python Data Science Handbook ✅</span>
-                        Essential Tools for Working with Data (500+ pages) <br> 
+                        Essential Tools for Working with Data (500+ pages) <br>
                         - learned numpy, pandas, matplotlib, python
                     </div>
                 </div>
 
-                                <div class="list-item">
+                <div class="list-item">
                     <div class="name">AL Sweigart</div>
                     <div class="desc">
                         <span class="book-title">Automate the Boring Stuff with Python
- ✅</span>
-                        Total beginner guide to programming (24+ chapters) <br> 
+                            ✅</span>
+                        Total beginner guide to programming (24+ chapters) <br>
                         - learned python core concepts, web scrapping & a lot more
                     </div>
                 </div>
 
-                
+
             </div>
         </section>
-        
+
     </main>
-    
+
 
 </body>
+
 </html>
