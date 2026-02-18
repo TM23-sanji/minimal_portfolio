@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>notes on RL – Lillian Weng blog</title>
+
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false }
+          ]
+        });
+      });
+    </script>
+  </head>
+
+  <body class="bg-orange-50 text-gray-900 w-full max-w-3xl mx-auto px-5 md:px-0 pb-20">
+
+    <header class="mt-12">
+      <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
+        RL Basics & Policy Gradient
+      </h1>
+      <p class="text-sm text-gray-600 mt-4 italic">
+        reinforcement learning • pretty math heavy shit but breakdown baby
+      </p>
+    </header>
+
+    <article class="mt-10 space-y-10 text-lg text-gray-800 leading-relaxed font-serif">
+
+      <section class="space-y-4">
+        <p>
+            Just a disclaimer that consider this as a supplement for the lilian weng policy grad blog cause i made these while going through that hell 
+            but ofc wonderful experience. If you are fine with derivation & maths then go ahead dawg.
+        </p>
+        <p>
+          Agent acts in the environment → how the environment reacts to actions is defined by the model (may know / may not know) → reward function.
+        </p>
+
+        <p>
+          The model defines the transition probability of the environment:
+        </p>
+
+        <p>
+          $$
+          P(s' \mid s, a)
+          $$
+        </p>
+
+        <p>
+          The effective transition probability under our policy is:
+        </p>
+
+        <p>
+          $$
+          P^{\pi}(s' \mid s) = \sum_{a} \pi(a \mid s) \, P(s' \mid s, a)
+          $$
+        </p>
+
+        <p>
+          If we know the model → we do model-based RL → Dynamic Programming.
+        </p>
+
+        <p>
+          Either model-free or try to learn the model explicitly as part of the algorithm.
+        </p>
+
+        <p>
+          Transition probability & reward dynamics.
+        </p>
+      </section>
+
+      <section class="space-y-4">
+        <p>
+          <strong>Model-based →</strong> rely on a model of the environment, either it is known or the algorithm learns it explicitly.
+        </p>
+
+        <p>
+          <strong>Model-free →</strong> no dependency on the model during learning. It is like ignoring the world, but the method tends to work. They just want to map states to the best action to maximize reward through trial & error.
+        </p>
+
+        <p>
+          Like Q-learning, reinforcement learning methods that learn the policy $\pi$ directly.
+        </p>
+      </section>
+
+    </article>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tm | Timelapses</title>
+    <title>tm | notes</title>
     <style>
         :root {
             --bg: #000000;
@@ -92,32 +92,24 @@
             margin-bottom: 2rem;
         }
 
-        /* Timelapse Grid Styles */
-        .timelapse-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1.5rem;
+        .item-list {
+            max-width: 750px;
         }
 
-        .timelapse-item {
-            aspect-ratio: 1 / 1;
-            border: 1px solid var(--highlight-border);
+        .list-item {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            color: var(--text-light);
-            background-color: transparent;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
-            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
         }
 
-        .timelapse-item:hover {
-            border-color: var(--text-main);
+        .list-item .name {
+            width: 150px;
+            flex-shrink: 0;
             color: var(--text-main);
-            background-color: var(--highlight-bg);
-            transform: translateY(-4px);
+        }
+
+        .list-item .desc {
+            color: var(--text-light);
         }
 
         @media (max-width: 1024px) {
@@ -167,27 +159,17 @@
             <a href="index.html" class="logo" style="text-decoration: none;">tm</a>
         </header>
 
-        <section id="timelapses" class="content-section">
-            <h2>my timelapses &rarr;</h2>
-
-            <div class="timelapse-grid">
-
-                <a href="https://x.com/tm23twt/status/2023742907535294490" class="timelapse-item" target="_blank">13</a>
-                <a href="https://x.com/tm23twt/status/2023270926293631361" class="timelapse-item" target="_blank">12</a>
-                <a href="https://x.com/tm23twt/status/2023022770230292610" class="timelapse-item" target="_blank">11</a>
-                <a href="https://x.com/tm23twt/status/2022666995393794392" class="timelapse-item" target="_blank">10</a>
-                <a href="https://x.com/tm23twt/status/2022304122746318866" class="timelapse-item" target="_blank">9</a>
-                <a href="https://x.com/tm23twt/status/2021948094313840977" class="timelapse-item" target="_blank">8</a>
-                <a href="https://x.com/tm23twt/status/2021577118090432607" class="timelapse-item" target="_blank">7</a>
-                <a href="https://x.com/tm23twt/status/2021130141855048134" class="timelapse-item" target="_blank">6</a>
-                <a href="https://x.com/tm23twt/status/2020792854633721923" class="timelapse-item" target="_blank">5</a>
-                <a href="https://x.com/tm23twt/status/2020449993509806183" class="timelapse-item" target="_blank">4</a>
-                <a href="https://x.com/tm23twt/status/2019779416969392337" class="timelapse-item" target="_blank">3</a>
-                <a href="https://x.com/tm23twt/status/2019406632451731522" class="timelapse-item" target="_blank">2</a>
-                <a href="https://x.com/tm23twt/status/2019010389770723477" class="timelapse-item" target="_blank">1</a>
+        <section id="notes" class="content-section">
+            <h2>notes &rarr;</h2>
+            <div class="item-list">
+                <div class="list-item">
+                    <div class="name">RL</div>
+                    <div class="desc">
+                        <a href="notes/rl_basics_&_pg.html">RL Basics & Policy Gradients</a>
+                    </div>
+                </div>
             </div>
         </section>
-
     </main>
 
 </body>
