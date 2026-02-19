@@ -1,102 +1,3829 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>notes on RL – Lillian Weng blog</title>
 
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>notes on RL – Lillian Weng blog</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        renderMathInElement(document.body, {
-          delimiters: [
-            { left: "$$", right: "$$", display: true },
-            { left: "$", right: "$", display: false }
-          ]
-        });
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ]
       });
-    </script>
-  </head>
+    });
+  </script>
+</head>
 
-  <body class="bg-orange-50 text-gray-900 w-full max-w-3xl mx-auto px-5 md:px-0 pb-20">
+<body class="bg-orange-50 text-gray-900 w-full max-w-6xl mx-auto px-5 md:px-8 pb-20 relative">
 
-    <header class="mt-12">
-      <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
-        RL Basics & Policy Gradient
-      </h1>
-      <p class="text-sm text-gray-600 mt-4 italic">
-        reinforcement learning • pretty math heavy shit but breakdown baby
-      </p>
-    </header>
+  <div class="flex flex-col lg:flex-row-reverse gap-10">
+    <!-- Sidebar / TOC -->
+    <aside
+      class="lg:w-72 lg:sticky lg:top-12 self-start bg-orange-100/50 p-6 rounded-2xl border border-orange-200/50 backdrop-blur-sm hidden lg:block">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-orange-800 mb-4 flex items-center gap-2">
+        <i data-lucide="list"></i> Contents
+      </h2>
+      <nav class="space-y-1 text-sm overflow-y-auto max-h-[calc(100vh-10rem)] pr-2">
+        <a href="#intro" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Introduction</a>
+        <a href="#rl-basics"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">RL
+          Basics & Model</a>
+        <a href="#model-types"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Model-based
+          vs Model-free</a>
+        <a href="#prob-basics"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Probability
+          Basics</a>
+        <a href="#transitions"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Transitions</a>
+        <a href="#policy"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Policy</a>
+        <a href="#return"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Return
+          & Value</a>
+        <a href="#bellman"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Bellman
+          Equations</a>
+        <a href="#optimality"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Optimality</a>
+        <a href="#iteration"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Policy
+          Iteration (GPI)</a>
+        <a href="#mc-td"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">MC vs
+          TD Learning</a>
+        <a href="#control"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">SARSA
+          & Q-Learning</a>
+        <a href="#dqn"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Deep
+          Q-Networks (DQN)</a>
+        <a href="#policy-gradient" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Policy
+          Gradient</a>
+        <a href="#pg-theorem"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">PG
+          Theorem</a>
+        <a href="#reinforce"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">REINFORCE</a>
+        <a href="#actor-critic" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Actor-Critic
+          Methods</a>
+        <a href="#async-methods"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">A2C /
+          A3C</a>
+        <a href="#evolution"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Evolution
+          Strategies</a>
+        <a href="#dpg"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Deterministic
+          PG (DDPG)</a>
+        <a href="#maddpg"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Multi-Agent
+          RL</a>
+        <a href="#ppo" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">PPO & TRPO</a>
+        <a href="#sac" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Soft Actor-Critic
+          (SAC)</a>
+        <a href="#advanced" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Advanced
+          Architectures</a>
+        <a href="#td3"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">TD3 &
+          SVPG</a>
+        <a href="#impala"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">IMPALA
+          & V-trace</a>
+      </nav>
+    </aside>
 
-    <article class="mt-10 space-y-10 text-lg text-gray-800 leading-relaxed font-serif">
+    <div class="flex-1 max-w-3xl">
 
-      <section class="space-y-4">
-        <p>
-            Just a disclaimer that consider this as a supplement for the lilian weng policy grad blog cause i made these while going through that hell 
+      <header class="mt-12">
+        <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
+          RL Basics & Policy Gradient
+        </h1>
+        <p class="text-sm text-gray-600 mt-4 italic">
+          reinforcement learning • pretty math heavy shit but breakdown baby
+        </p>
+      </header>
+
+      <article class="mt-10 space-y-10 text-lg text-gray-800 leading-relaxed font-serif">
+
+        <section id="intro" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Introduction</h2>
+          <p>
+            Just a disclaimer that consider this as a supplement for the lilian weng policy grad blog cause i made these
+            while going through that hell
             but ofc wonderful experience. If you are fine with derivation & maths then go ahead dawg.
-        </p>
-        <p>
-          Agent acts in the environment → how the environment reacts to actions is defined by the model (may know / may not know) → reward function.
-        </p>
+          </p>
+          <p>
+            Agent acts in the environment → how the environment reacts to actions is defined by the model (may know /
+            may
+            not know) → reward function.
+          <section id="rl-basics" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">RL Basics &
+              Environment</h2>
+            <p>
+              The model defines the transition probability of the environment:
+            </p>
 
-        <p>
-          The model defines the transition probability of the environment:
-        </p>
+            <p>
+              $$
+              P(s' \mid s, a)
+              $$
+            </p>
 
-        <p>
-          $$
-          P(s' \mid s, a)
-          $$
-        </p>
+            <p>
+              The effective transition probability under our policy is:
+            </p>
 
-        <p>
-          The effective transition probability under our policy is:
-        </p>
+            <p>
+              $$
+              P^{\pi}(s' \mid s) = \sum_{a} \pi(a \mid s) \, P(s' \mid s, a)
+              $$
+            </p>
 
-        <p>
-          $$
-          P^{\pi}(s' \mid s) = \sum_{a} \pi(a \mid s) \, P(s' \mid s, a)
-          $$
-        </p>
+            <p>
+              If we know the model → we do model-based RL → Dynamic Programming.
+            </p>
 
-        <p>
-          If we know the model → we do model-based RL → Dynamic Programming.
-        </p>
+            <p>
+              Either model-free or try to learn the model explicitly as part of the algorithm.
+            </p>
 
-        <p>
-          Either model-free or try to learn the model explicitly as part of the algorithm.
-        </p>
+            <p>
+              Transition probability & reward dynamics.
+            </p>
+          </section>
 
-        <p>
-          Transition probability & reward dynamics.
-        </p>
-      </section>
+          <section id="model-types" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Model-based vs Model-free</h3>
+            <p>
+              <strong>Model-based →</strong> rely on a model of the environment, either it is known or the algorithm
+              learns it
+              explicitly.
+            </p>
 
-      <section class="space-y-4">
-        <p>
-          <strong>Model-based →</strong> rely on a model of the environment, either it is known or the algorithm learns it explicitly.
-        </p>
+            <p>
+              <strong>Model-free →</strong> no dependency on the model during learning. It is like ignoring the world,
+              but
+              the
+              method tends to work. They just want to map states to the best action to maximize reward through trial &
+              error.
+            </p>
 
-        <p>
-          <strong>Model-free →</strong> no dependency on the model during learning. It is like ignoring the world, but the method tends to work. They just want to map states to the best action to maximize reward through trial & error.
-        </p>
+            <p>
+              Like Q-learning, reinforcement learning methods that learn the policy $\pi$ directly.
+            </p>
+          </section>
 
-        <p>
-          Like Q-learning, reinforcement learning methods that learn the policy $\pi$ directly.
-        </p>
-      </section>
+          <section id="prob-basics" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Probability Basics</h3>
+            <p>
+              Joint $P = P(A \cap B)$ like $P(s',r|s,a)$
+            </p>
 
-    </article>
+            <p>
+              Marginal $P(A) = \sum P(A,B) = \int P(A,B) \, db$
+            </p>
 
-    <script>
-      lucide.createIcons();
-    </script>
-  </body>
+            <p>
+              Conditional $P(A|B) = \frac{P(A \cap B)}{P(B)}$
+            </p>
+
+          </section>
+
+          <section id="transitions" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">State Transitions</h3>
+            <p>
+              $$
+              S_t \; \xrightarrow{A_t} \; [R_{t+1}, S_{t+1}]
+              $$
+            </p>
+
+            <p>
+              State transition func can be defined as func of $P(s',r|s,a)$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              So say vending machine state $(s)$, action $(a)$ is insert coin
+            </p>
+
+            <p>
+              Outcome A : get Soda $(s')$ & reward +1 (it worked)
+            </p>
+
+            <p>
+              B : get soda $(s')$ & reward +5 (machine glitched & got your coin back)
+            </p>
+
+            <p>
+              C : eat your coin (S Fail) & reward -1
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              now
+            </p>
+
+            <p>
+              $$
+              P(s', r \mid s, a) = P[ S_{t+1}=s' , R_{t+1}=r \mid S_t = s , A_t = a ]
+              $$
+            </p>
+
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              P_{ss'}^a = P(s'|s,a) = P[ S_{t+1}=s' \mid S_t = s , A_t = a ] = \sum_{r \in R} P(s',r \mid s,a)
+              $$
+            </p>
+
+            <p>
+              this marginalizes out rewards
+            </p>
+
+            <p>
+              if reward was always same for specific move , this Summation is formality -that doesn't change numbers.
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              R(s,a) = E[ R_{t+1} \mid S_t = s , A_t = a ] = \sum_{r \in R} r \sum_{s' \in S} P(s',r \mid s,a)
+              $$
+            </p>
+          </section>
+
+          <section id="policy" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Policy & Value
+              Functions</h2>
+            <p>
+              Now Policy → agent's behavior function $\pi$ tells which action to take in state $s$.
+            </p>
+
+            <p>
+              • Deterministic $\quad \pi(s) = a$
+            </p>
+
+            <p>
+              • Stochastic $\quad \pi(a|s) = P_\pi [ A=a \mid S=s ]$
+            </p>
+          </section>
+
+          <section id="return" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Return & Value</h3>
+            <p>
+              $$
+              G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
+              $$
+            </p>
+
+          </section>
+
+          <section class="space-y-4">
+
+            <p>
+              State Value (s)
+              $$
+              V_\pi(s) = E_\pi [ G_t \mid S_t = s ]
+              $$
+            </p>
+
+            <p>
+              Action Value (s,a)
+              $$
+              Q_\pi(s,a) = E_\pi [ G_t \mid S_t = s , A_t = a ]
+              $$
+            </p>
+
+            <p>
+              $$
+              = R(s,a) + \gamma E_\pi [ V_\pi(S_{t+1}) \mid S_t = s , A_t = a ]
+              $$
+            </p>
+          </section>
+
+          <section id="bellman" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Bellman Equations
+            </h2>
+            <p>
+              if we marginalize the action we again get value of state
+            </p>
+
+            <p>
+              $$
+              V_\pi(s) = \sum_{a \in A} Q_\pi(s,a) \, \pi(a|s)
+              $$
+            </p>
+
+            <p>
+              Advantage (A)
+              $$
+              A_\pi(s,a) = Q_\pi(s,a) - V_\pi(s)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              V(s) = E[ R_{t+1} + \gamma V(S_{t+1}) \mid S_t = s ]
+              $$
+            </p>
+
+            <p>
+              $$
+              Q(s,a) = E[ R_{t+1} + \gamma E_{a \sim \pi} Q(S_{t+1}, a) \mid S_t = s , A_t = a ]
+              $$
+              action is sampled from policy
+            </p>
+
+            <p>
+              $$
+              Q_\pi(s,a) = R(s,a) + \gamma \sum_{s' \in S} P^a_{ss'} V_\pi(s')
+              $$
+            </p>
+
+            <p>
+              ⇒ tp jus a way to cover all possible way /situations to reach $s'$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              V_\pi(s) =
+              \sum_{a \in A} \pi(a|s)
+              \left(
+              R(s,a)
+              + \gamma \sum_{s' \in S} P^a_{ss'} V_\pi(s')
+              \right)
+              $$
+            </p>
+
+          </section>
+
+          <section id="optimality" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Optimality</h2>
+            <p>
+              $$
+              Q_\pi(s,a) =
+              R(s,a)
+              + \gamma
+              \sum_{s' \in S}
+              P^a_{ss'}
+              \sum_{a' \in A}
+              \pi(a'|s')
+              Q_\pi(s',a')
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              V_*(s) = \max_{\pi} V_\pi(s)
+              \quad , \quad
+              Q_*(s,a) = \max_{\pi} Q_\pi(s,a)
+              $$
+            </p>
+
+            <p>
+              ↓
+            </p>
+
+            <p>
+              among all policies pick the one that gives highest expected return.
+              this is that policy
+            </p>
+
+            <p>
+              $$
+              \pi_* = \arg\max_{\pi} V_\pi(s)
+              \quad , \quad
+              \pi_* = \arg\max_{\pi} Q_\pi(s,a)
+              $$
+            </p>
+
+            <p>
+              returns a policy
+            </p>
+
+            <p>
+              $$
+              V_{\pi_*}(s) = V_*(s)
+              \qquad
+              Q_{\pi_*}(s,a) = Q_*(s,a)
+              $$
+            </p>
+
+
+            <p>
+              ⇒ best possible strategy & best possible reward
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              So to find the optimal policy $(\pi_*)$ if agent learns optimal
+              values say $(Q_*)$ then finding policy becomes easy. cause
+            </p>
+
+            <p>
+              then its just
+            </p>
+
+            <p>
+              $$
+              \pi_*(s) = \arg\max_a Q_*(s,a)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              in optimal case
+            </p>
+
+            <p>
+              $$
+              V_*(s) = \max_{a \in A} Q_*(s,a)
+              $$
+              cause its like now we know
+              true Q values , no need to explore
+              hence go deterministically
+            </p>
+
+            <p>
+              $$
+              Q_*(s,a) =
+              R(s,a)
+              + \gamma
+              \sum_{s' \in S}
+              P^a_{ss'}
+              V_*(s')
+              $$
+            </p>
+
+            <p>
+              ⇒ again to cover all cases
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              V_*(s) =
+              \max_{a \in A}
+              \left(
+              R(s,a)
+              + \gamma
+              \sum_{s' \in S}
+              P^a_{ss'}
+              V_*(s')
+              \right)
+              $$
+            </p>
+
+            <p>
+              $$
+              Q_*(s,a) =
+              R(s,a)
+              + \gamma
+              \sum_{s' \in S}
+              P_{ss'}^a
+              \max_{a' \in A}
+              Q_*(s',a')
+              $$
+            </p>
+          </section>
+
+          <section id="iteration" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Policy Iteration
+              (GPI)</h2>
+            <p>
+              In most cases we don't know $P_{ss'}^a$ or $R(s,a)$
+            </p>
+
+            <p>
+              $$
+              V(s) =
+              \sum_{a}
+              \pi(a|s)
+              \sum_{s',r}
+              P(s',r \mid s,a)
+              \left(
+              r + \gamma V(s')
+              \right)
+              $$
+            </p>
+
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              V_{t+1}(s) =
+              E_\pi
+              [ r + \gamma V_t(s') \mid S_t = s ]
+              $$
+              → not change how agent behaves
+              just makes Values more accurate for current
+              policy $\pi$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              Q_\pi(s,a) =
+              \sum_{s',r}
+              P(s',r \mid s,a)
+              (r + \gamma V_\pi(s'))
+              $$
+            </p>
+
+            <p>
+              $$
+              =
+              E
+              [ R_{t+1} + \gamma V_\pi(S_{t+1})
+              \mid S_t = s , A_t = a ]
+              $$
+            </p>
+
+            <p>
+              → this change agent behavior
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              When we evaluate $V_{t+1}$ we update knowledge of current
+              scenario & when we improve $Q_\pi \to \pi'$ we update our
+              behavior on that knowledge.
+            </p>
+
+            <p>
+              $$
+              \pi'(s) = \arg\max_a Q_\pi(s,a)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              So basically we have value of states, Q value & policy
+              now if we say updated our Policy so we
+              will update our State values , that would
+              lead to Q value updates , then our new policy
+              will become this argmax & then again loop.
+            </p>
+
+            <p>
+              This is Policy iteration & a common algorithm
+              Generalized Policy iteration
+            </p>
+
+            <p>
+              $$
+              \pi_0 \to V^{\pi_0}
+              \to \pi_1 \to V^{\pi_1}
+              \to \pi_2
+              \to \dots
+              \to V_*
+              $$
+            </p>
+          </section>
+
+          <section id="mc-td" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">MC vs TD Learning
+            </h2>
+            <p>
+              Now Monte Carlo is model free with more variance
+              as one episode can skew things. In Temporal
+              diff we don't wait for whole episode
+            </p>
+          </section>
+
+
+          <section class="space-y-4">
+            <p>
+              So in TD learning we use bootstrapping
+            </p>
+
+            <p>
+              $$
+              V(S_t) \leftarrow
+              V(S_t)
+              + \alpha
+              \left(
+              R_{t+1}
+              + \gamma V(S_{t+1})
+              - V(S_t)
+              \right)
+              $$
+            </p>
+
+            <p>
+              $$
+              Q(S_t, A_t) \leftarrow
+              Q(S_t, A_t)
+              + \alpha
+              \left(
+              R_{t+1}
+              + \gamma Q(S_{t+1}, A_{t+1})
+              - Q(S_t, A_t)
+              \right)
+              $$
+            </p>
+
+          </section>
+
+          <section id="control" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">SARSA & Q-Learning</h3>
+            <p>
+              now SARSA is on-policy TD Control (optimal policy in TD learning)
+            </p>
+
+            <p>
+              Q learning is off-policy TD control
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              So in SARSA, Q learning
+            </p>
+
+            <p>
+              $$
+              A_{t+1} = \arg\max_{a \in A} Q(S_{t+1}, a)
+              $$
+            </p>
+
+            <p>
+              ↓
+            </p>
+
+            <p>
+              $\varepsilon$-greedy in action so sometimes even the action with
+              less Q value might get selected.
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              Q learning
+            </p>
+
+            <p>
+              $$
+              Q(S_t, A_t) \leftarrow
+              \dots
+              \left(
+              R_{t+1}
+              + \gamma \max_{a \in A} Q(S_{t+1}, a)
+              \right)
+              \dots
+              $$
+            </p>
+
+            <p>
+              key diff is that Q learning doesn't follow current policy to
+              pick the second action $A_{t+1}$ , it estimates the
+              best one directly.
+            </p>
+          </section>
+
+          <section id="dqn" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Deep Q-Networks
+              (DQN)</h2>
+            <p>
+              But now Q learning table will easily become large
+              hence now we use model to predict Q value as
+              $$
+              Q(s,a;\theta)
+              $$
+            </p>
+
+            <p>
+              Training could be hard & unstable due to deadly triad. Non linear func approx, off policy, bootstrapping
+            </p>
+
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              So in DQN LOSS is like
+            </p>
+
+            <p>
+              $$
+              L(\theta) =
+              E_{(s,a,r,s') \sim U(D)}
+              \left[
+              \left(
+              r
+              + \gamma
+              \max_{a'}
+              Q(s',a';\theta^-)
+              - Q(s,a;\theta)
+              \right)^2
+              \right]
+              $$
+            </p>
+
+            <p>
+              ↓
+            </p>
+
+            <p>
+              uniform
+              distribution
+              of replay memory
+            </p>
+          </section>
+
+          <section id="nstep-td" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">n-step TD Learning</h3>
+            <p>
+              in generalized n-step TD learning
+            </p>
+
+            <p>
+              $$
+              V(S_t) \leftarrow
+              V(S_t)
+              + \alpha
+              \left(
+              G_t^n - V(S_t)
+              \right)
+              $$
+            </p>
+
+            <p>
+              ↓
+            </p>
+
+            <p>
+              $$
+              G_t^n =
+              R_{t+1}
+              + \gamma R_{t+2}
+              + \cdots
+              + \gamma^n V(S_{t+n})
+              $$
+            </p>
+          </section>
+
+          <section id="policy-gradient" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Policy Gradient
+              (PG)</h2>
+            <p>
+              now as of now we learn state/action value then to
+              select action accordingly , now in PG directly policy.
+            </p>
+
+            <p>
+              $$
+              \pi(a|s ; \theta)
+              $$
+              policy with $\theta$ param
+            </p>
+
+            <p>
+              $$
+              J(\theta)
+              $$
+              : expected total reward , we want to max this
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              Discrete →
+            </p>
+
+            <p>
+              $$
+              J(\theta) = V_{\pi_\theta}(S_1)
+              $$
+            </p>
+
+            <p>
+              initial state return so
+              goal is to find $\theta$ that
+              maximize value of initial state
+              (here or this for
+              Starting state is same)
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              Continuous / Stationary case →
+              many Starting state or agent
+              run forever or continuous
+            </p>
+
+            <p>
+              (stationary distribution)
+              $$
+              d^{\pi_\theta}(s)
+              $$
+              ← So we track how often
+              agent visit each state
+            </p>
+
+            <p>
+              prob that agent will be in states
+              if it follow $\pi_\theta$ for long time
+            </p>
+
+            <p>
+              $$
+              J(\theta) =
+              \sum_{s \in S}
+              d^{\pi_\theta}(s)
+              V_{\pi_\theta}(s)
+              $$
+              this is for
+              each state
+            </p>
+
+            <p>
+              $$
+              =
+              \sum_{s}
+              d^{\pi_\theta}(s)
+              \sum_{a \in A}
+              \pi(a|s,\theta)
+              Q_\pi(s,a)
+              $$
+            </p>
+          </section>
+
+          <section id="pg-theorem" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Policy Gradient Theorem</h3>
+            <p>
+              now Policy gradient theorem allow us to calculate gradient
+            </p>
+
+            <p>
+              $$
+              \nabla J(\theta)
+              $$
+            </p>
+
+            <p>
+              without actually calc. derivative of state distribution
+            </p>
+
+            <p>
+              $$
+              d^{\pi_\theta}(s)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              Cause when we change $\theta$ to improve $(\pi)$ we
+              accidentally change where we go
+              $$
+              d^{\pi_\theta}(s)
+              $$
+              cause they are dependent.
+            </p>
+
+            <p>
+              now this
+              $$
+              d^{\pi_\theta}(s)
+              $$
+              is problem & we'll proof that it is replaced via
+              $$
+              d(s)
+              $$
+              just distribution not dep. on $\theta$
+            </p>
+
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              J(\theta)
+              =
+              E_{\pi_\theta}[r]
+              =
+              \sum_{s \in S}
+              d^{\pi_\theta}(s)
+              \sum_{a \in A}
+              \pi(a|s;\theta)
+              R(s,a)
+              $$
+            </p>
+
+            <p>
+              $$
+              J(\theta)
+              =
+              \sum_{s \in S}
+              d(s)
+              \sum \dots
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              \nabla J(\theta)
+              =
+              \sum_{s \in S}
+              d(s)
+              \sum_{a \in A}
+              \pi(a|s;\theta)
+              \nabla_\theta \pi(a|s;\theta)
+              Q_\pi(s,a)
+              $$
+            </p>
+
+            <p>
+              $$
+              \nabla J(\theta)
+              =
+              \sum_{s \in S}
+              d(s)
+              \sum_{a \in A}
+              \pi(a|s;\theta)
+              \nabla_\theta
+              \ln \pi(a|s;\theta)
+              Q_\pi(s,a)
+              $$
+            </p>
+
+            <p>
+              $$
+              =
+              E_{\pi_\theta}
+              \left[
+              \nabla
+              \ln \pi(a|s;\theta)
+              Q_\pi(s,a)
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section id="reinforce" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">REINFORCE (Monte Carlo PG)</h3>
+            <p>
+              Reinforce / Monte carlo PG → since whole episode we have $G_t$
+            </p>
+
+            <p>
+              $$
+              \nabla J(\theta)
+              =
+              E_{\pi_\theta}
+              \left[
+              \nabla_\theta
+              \ln \pi_\theta(a_t|s_t)
+              G_t
+              \right]
+              $$
+            </p>
+
+            <p>
+              So
+            </p>
+
+            <p>
+              $$
+              \theta
+              \leftarrow
+              \theta
+              +
+              \alpha
+              \gamma^t
+              G_t
+              \nabla_\theta
+              \ln \pi_\theta (A_t | S_t)
+              $$
+            </p>
+
+            <p>
+              → like $G_t$ at state $t = R_{t+1} + \gamma R_{t+2} + \cdots$
+            </p>
+
+            <p>
+              now here again variance
+            </p>
+          </section>
+
+          <section id="advantage-baselines" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Advantage & Baselines</h3>
+            <p>
+              so we use advantage baseline
+              which is
+            </p>
+
+            <p>
+              $$
+              A(s,a) = Q(s,a) - V(s)
+              $$
+            </p>
+
+            <p>
+              now its not like we can't make it REINFORCE with
+              baseline like
+            </p>
+
+            <p>
+              $$
+              \nabla J(\theta)
+              =
+              E_{\pi_\theta}
+              \left[
+              \nabla_\theta
+              \ln \pi_\theta (a_t | s_t)
+              (G_t - V(s_t))
+              \right]
+              $$
+            </p>
+
+            <p>
+              monte carlo with baseline
+            </p>
+          </section>
+
+          <section id="actor-critic" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Actor-Critic
+              Methods</h2>
+            <p>
+              Now in Actor critic Temporal difference comes into play
+            </p>
+
+            <p>
+              Now instead of $G_t$ or baseline,
+            </p>
+
+            <p>
+              $$
+              A(s_t, a_t)
+              \approx
+              r_t
+              + \gamma V(s_{t+1})
+              - V(s_t)
+              $$
+              &nbsp;&nbsp;&nbsp;&nbsp; bootstrap
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              Critic is value network
+              $$
+              V(s)
+              $$
+              can be
+              $$
+              Q(a|s;\omega)
+              $$
+              or
+              $$
+              V(s;\omega)
+              $$
+            </p>
+
+            <p>
+              Actor is policy network
+              $$
+              \pi(a|s;\theta)
+              $$
+              updates in direction suggested by critic
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              now policy param $\theta$
+            </p>
+
+            <p>
+              $$
+              \theta
+              \leftarrow
+              \theta
+              +
+              \alpha_\theta
+              \, Q(s,a;\omega)
+              \, \nabla_\theta
+              \ln \pi(a|s;\theta)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              & for critic value param $\omega$
+            </p>
+
+            <p>
+              $$
+              \omega
+              \leftarrow
+              \omega
+              +
+              \alpha_\omega
+              \, G_{t:t+1}
+              \, \nabla_\omega
+              Q(s,a;\omega)
+              $$
+            </p>
+
+            <p>
+              ↓
+            </p>
+
+            <p>
+              $$
+              G_{t:t+1}
+              =
+              r_t
+              +
+              \gamma
+              Q(s',a';\omega)
+              -
+              Q(s,a;\omega)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              this eqn is basically
+            </p>
+
+            <p>
+              $$
+              \omega_{\text{new}}
+              \leftarrow
+              \omega_{\text{old}}
+              +
+              \alpha
+              \frac{\partial L}{\partial \omega}
+              $$
+            </p>
+
+            <p>
+              now
+            </p>
+
+            <p>
+              $$
+              L(\omega)
+              =
+              \frac{1}{2}
+              (G_{t:t+1})^2
+              $$
+            </p>
+
+            <p>
+              basically MSE of TD error
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              now gradient
+            </p>
+
+            <p>
+              $$
+              \frac{\partial L}{\partial \omega}
+              =
+              \text{error}
+              \times
+              \frac{\partial (Q(s,a;\omega))}{\partial \omega}
+              $$
+            </p>
+
+            <p>
+              So that gives eqn
+            </p>
+
+            <p>
+              $$
+              \omega
+              \leftarrow
+              \omega
+              +
+              \alpha_\omega
+              \, (\text{TD error})
+              \, \nabla_\omega
+              Q(s,a;\omega)
+              $$
+            </p>
+          </section>
+
+          <section id="async-methods" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">A2C / A3C (Async Methods)</h3>
+            <p>
+              in A3C there is Async Asynchronous , so like multiple
+              workers and like global param update async settings
+              same as A2C.
+            </p>
+          </section>
+
+          <section id="evolution" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Evolution
+              Strategies</h2>
+            <p>
+              Evolution strategies : Think of this like distribution
+              of $d$ dimension now a sample
+              would give us a neural network
+              params. So we basically have
+              mean + variance × epsilon
+            </p>
+
+            <p>
+              Where we get high fitness score that becomes
+              our answer.
+            </p>
+
+            <p>
+              $$
+              J(\mu)
+              =
+              E_{\theta \sim p_\mu}
+              [F(\theta)]
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              \nabla_\mu
+              E_{\theta \sim \mathcal{N}(\mu,\sigma^2)}
+              [F(\theta)]
+              =
+              \nabla_\mu
+              \int
+              F(\theta)
+              p_\mu(\theta)
+              d\theta
+              $$
+            </p>
+
+            <p>
+              $$
+              =
+              \int
+              F(\theta)
+              \nabla_\mu
+              p_\mu(\theta)
+              d\theta
+              $$
+            </p>
+
+            <p>
+              $$
+              \nabla_\mu p_\mu(\theta)
+              =
+              p_\mu(\theta)
+              \nabla_\mu
+              \ln p_\mu(\theta)
+              $$
+            </p>
+
+            <p>
+              $$
+              =
+              \int
+              F(\theta)
+              p_\mu(\theta)
+              \nabla_\mu
+              \ln p_\mu(\theta)
+              d\theta
+              $$
+            </p>
+
+            <p>
+              $$
+              =
+              E_\theta
+              \left[
+              F(\theta)
+              \nabla_\mu
+              \log p_\mu(\theta)
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              $$
+              \nabla_\mu
+              \log p_\mu(\theta)
+              =
+              \frac{\theta - \mu}{\sigma^2}
+              $$
+            </p>
+
+            <p>
+              $$
+              =
+              E_\theta
+              \left[
+              F(\theta)
+              \frac{\theta - \mu}{\sigma^2}
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              \theta
+              =
+              \mu
+              +
+              \sigma \varepsilon
+              \quad ,
+              \quad
+              \varepsilon \sim \mathcal{N}(0,I)
+              \quad ,
+              \quad
+              \theta \sim \mathcal{N}(0,\sigma^2)
+              $$
+            </p>
+
+            <p>
+              $$
+              =
+              \frac{1}{\sigma}
+              E_{\varepsilon \sim \mathcal{N}(0,I)}
+              \left[
+              F(\mu + \sigma \varepsilon)
+              \varepsilon
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              then same
+            </p>
+
+            <p>
+              $$
+              \mu_{\text{new}}
+              =
+              \mu_{\text{old}}
+              +
+              \alpha
+              \cdot
+              \text{Gradient}
+              $$
+            </p>
+          </section>
+
+          <section id="offpolicy-pg" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Off-policy PG & Importance Sampling</h3>
+            <p>
+              • In value learned methods we can use diff policy /
+              replay buffers cause they don't depend on
+              the policy , only need transition.
+            </p>
+
+            <p>
+              like
+            </p>
+
+            <p>
+              $$
+              Q(s,a)
+              \leftarrow
+              r
+              +
+              \gamma
+              \max_{a'}
+              Q(s',a')
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              while policy grad :
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              E_{(s,a) \sim \pi_\theta}
+              \left[
+              Q^\pi(s,a)
+              \nabla_\theta
+              \log \pi_\theta(a|s)
+              \right]
+              $$
+            </p>
+
+            <p>
+              So expectation over current policy $\pi_\theta$ , (but
+              replay buffer of old transitions $\sim \pi_{\text{old}}$
+              so distribution mismatch
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              So that's why in PG if using off-policy we
+              use importance sampling where
+            </p>
+
+            <p>
+              $$
+              \frac{\pi_\theta(a|s)}{\beta(a|s)}
+              $$
+              new / old = importance weighting
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              E_{(s,a) \sim \mu}
+              \left[
+              \frac{\pi_\theta(a|s)}{\mu(a|s)}
+              Q(s,a)
+              \nabla_\theta
+              \log \pi_\theta(a|s)
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section id="pg-summary" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Policy Gradient Summary</h3>
+            <p>
+              • Now a Summary
+            </p>
+
+            <p>
+              Reinforce →
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              E
+              \left[
+              G_t
+              \nabla_\theta
+              \log \pi_\theta (a_t | s_t)
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              \theta
+              \leftarrow
+              \theta
+              +
+              \alpha
+              G_t
+              \nabla_\theta
+              \log \pi_\theta (a_t | s_t)
+              $$
+            </p>
+
+            <p>
+              no bias &nbsp;&nbsp; high variance due to full return
+            </p>
+
+            <p>
+              now Q value
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              Actor Critic →
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              E
+              \left[
+              Q_\omega (s_t, a_t)
+              \nabla_\theta
+              \log \pi_\theta (a_t | s_t)
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              \theta
+              \leftarrow
+              \theta
+              +
+              \alpha_\theta
+              \, Q_\omega(s_t, a_t)
+              \, \nabla_\theta
+              \log \pi_\theta (a_t | s_t)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              now for value → how much to correct → TD error
+            </p>
+
+            <p>
+              $$ \delta_t =
+              r_t
+              +
+              \gamma Q_\omega(s',a')
+              -
+              Q_\omega(s,a)
+              $$
+            </p>
+
+            <p>
+              grad direction
+            </p>
+
+            <p>
+              $$
+              \nabla_\omega Q_\omega(s_t, a_t)
+              $$
+            </p>
+
+            <p>
+              $$
+              \omega
+              \leftarrow
+              \omega
+              +
+              \alpha_\omega
+              \, \delta_t
+              \, \nabla_\omega Q_\omega(s,a)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              See critic min error
+            </p>
+
+            <p>
+              $$
+              \min_\omega
+              ( V_\omega(s_t) - \text{target} )^2
+              $$
+            </p>
+
+            <p>
+              so grad
+            </p>
+
+            <p>
+              $$
+              \nabla_\omega L
+              =
+              2 \delta_t
+              \nabla_\omega V_\omega(s_t)
+              $$
+            </p>
+
+            <p>
+              Actor max reward
+            </p>
+
+            <p>
+              $$
+              \max_\theta
+              E
+              \left[
+              A_t
+              \log \pi_\theta (a_t | s_t)
+              \right]
+              $$
+            </p>
+
+            <p>
+              grad
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J
+              =
+              A_t
+              \nabla_\theta
+              \log \pi_\theta (a_t | s_t)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              So
+            </p>
+
+            <p>
+              $$
+              L_{\text{critic}}
+              =
+              (-V(s_t)
+              +
+              r_t
+              +
+              \gamma V(s_{t+1}))^2
+              $$
+            </p>
+
+            <p>
+              $$
+              \delta_t
+              =
+              r_t
+              +
+              \gamma V(s_{t+1})
+              -
+              V(s_t)
+              $$
+            </p>
+
+            <p>
+              $$
+              L_{\text{critic}}
+              =
+              \delta_t^2
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              in Advantage Actor critic (A2C)
+            </p>
+
+            <p>
+              $$
+              \theta
+              \leftarrow
+              \theta
+              +
+              \alpha_\theta
+              \, A_t
+              \, \nabla_\theta
+              \log \pi_\theta (a_t | s_t)
+              $$
+            </p>
+
+            <p>
+              $$
+              A_t
+              =
+              Q(s_t,a_t)
+              -
+              V(s_t)
+              $$
+            </p>
+
+            <p>
+              $$
+              \omega
+              \leftarrow
+              \omega
+              +
+              \alpha_\omega
+              \, (\delta_t)^2
+              $$
+            </p>
+
+            <p>
+              $$
+              \delta_t
+              =
+              A_t
+              \approx
+              r_t
+              +
+              \gamma V(s_{t+1})
+              -
+              V(s_t)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              return our content in same HTML foramt
+            </p>
+          </section>
+
+          <section id="dpg" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Deterministic PG
+              (DPG)</h2>
+            <p>
+              now in DPG see the policy outputs one action
+              a = μ(s) not stochastic like π(·|s) like
+              distribution.
+            </p>
+
+            <p>
+              So then where randomness come from -that is
+              maybe env is stochastic , reward is remember that
+              coke machine
+              or sometimes we add noise.
+            </p>
+
+            <p>
+              But still how gradient of action prob when it
+              outputs a single action ???
+            </p>
+
+            <p>
+              also PG is naturally on policy but DPG is off
+              policy as action is deterministic. cause in
+              sampling trajectory we add noise ( μ(s) = π_θ(s) + ε )
+            </p>
+
+            <p>
+              most correct PG theorem form is
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              \sum_s p^\pi(s)
+              \sum_a
+              \pi(a|s)
+              \nabla_\theta
+              \log \pi(a|s)
+              Q(s,a)
+              $$
+            </p>
+
+            <p>
+              $$
+              =
+              E_{(s,a)\sim\pi_\theta}
+              \left[
+              Q^{\pi_\theta}(s,a)
+              \nabla_\theta
+              \log \pi(a|s)
+              \right]
+              $$
+            </p>
+
+            <p>
+              in DPG
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              E_{s \sim p^\mu}
+              \left[
+              \nabla_\theta
+              \pi_\theta(s)
+              \;
+              \nabla_a
+              Q^\pi(s,a)
+              \Big|
+              a = \pi_\theta(s)
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              p^\mu(s)
+              =
+              \sum_{t=0}^{\infty}
+              \gamma^t
+              P(s_t = s \mid \mu),
+              a_t = \pi_\theta(s_t)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              If you confused see its simple
+            </p>
+
+            <p>
+              PG
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              \sum_s
+              p^\pi(s)
+              \sum_a
+              \pi(a|s)
+              \nabla_\theta
+              \log \pi(a|s)
+              Q^\pi(s,a)
+              $$
+            </p>
+
+            <p>
+              here
+            </p>
+
+            <p>
+              $$
+              p^\pi(s)
+              =
+              \sum_{t=0}^{\infty}
+              \gamma^t
+              P(s_t = s)
+              $$
+            </p>
+
+            <p>
+              now stationary dist is the one that sums up to 1
+              which is prob. distribution rule
+            </p>
+
+            <p>
+              $$
+              p^\pi(s)
+              =
+              \frac{d^\pi(s)}{1-\gamma}
+              $$
+            </p>
+
+            <p>
+              here $\frac{1}{1-\gamma}$ is constant factor
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              but in DPG states comes from $p^\mu$ not $p^\pi$
+              So off policy hence we must mention which
+              distribution we are integrating over
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              \int
+              p^\mu(s)
+              \;
+              \nabla_a Q^\mu(s,a)
+              \;
+              \nabla_\theta \mu_\theta(s)
+              \Big|
+              _{a=\mu_\theta(s)}
+              \; ds
+              $$
+            </p>
+
+            <p>
+              $\mu$ → behavior policy &nbsp;&nbsp;&nbsp;
+              $\mu_\theta$ → actor & target policy &nbsp;&nbsp;&nbsp;
+              deterministic action
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta
+              Q(s, \mu_\theta(s))
+              =
+              \frac{\partial Q(s,a)}{\partial a}
+              \cdot
+              \frac{\partial \mu_\theta(s)}{\partial \theta}
+              \Bigg|
+              _{a=\mu_\theta(s)}
+              $$
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              E_{s \sim p^\mu}
+              \left[
+              \nabla_a Q^\mu(s,a)
+              \;
+              \nabla_\theta \mu_\theta(s)
+              \Big|
+              _{a=\mu_\theta(s)}
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section id="ddpg" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">DDPG (DPG + DQN)</h3>
+            <p>
+              the DDPG or DPG + DQN
+            </p>
+
+            <p>
+              now that gradient of Q means slightly change action → how much Q value change → slightly change actor
+              param
+              →
+              how much action change
+            </p>
+
+            <p>
+              here
+            </p>
+
+            <p>
+              $$
+              \nabla_a Q
+              \cdot
+              \nabla_\theta \mu
+              $$
+            </p>
+
+            <p>
+              means how should i
+              change actor params so that action moves
+              uphill in Q
+            </p>
+
+            <p>
+              So here instead of using prob. we directly
+              pushes actions uphill.
+            </p>
+
+            <p>
+              Stochastic PG
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              E
+              \left[
+              Q(s,a)
+              \nabla_\theta
+              \log \pi_\theta(a|s)
+              \right]
+              $$
+            </p>
+
+            <p>
+              inc prob. of good actions
+            </p>
+
+            <p>
+              DPG
+            </p>
+
+            <p>
+              $$
+              \nabla_\theta J(\theta)
+              =
+              E
+              \left[
+              \nabla_a Q(s,a)
+              \cdot
+              \nabla_\theta \mu_\theta(s)
+              \right]
+              $$
+            </p>
+
+            <p>
+              move actions in direction that improves Q.
+            </p>
+          </section>
+
+          <section id="d4pg" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">D4PG</h3>
+            <p>
+              now D4 PG → distributed distribution deep deterministic PG
+            </p>
+
+            <p>
+              here what the words mean : many agents, instead of a Q value we get Z distribution, neural net, single
+              action
+            </p>
+          </section>
+
+          <section id="maddpg" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Multi-Agent RL
+              (MADDPG)</h2>
+            <p>
+              in MADDPG → Single env many agents like
+              - think of two robots carrying
+              table one pushes forward others
+              backward , the table don't move.
+            </p>
+
+            <p>
+              Multi agent rl when state transition depend on joint action.
+            </p>
+
+            <p>
+              like single agent
+            </p>
+
+            <p>
+              $$
+              P(s' \mid s, a)
+              $$
+            </p>
+
+
+
+            <p>
+              multi agent (all action at once)
+            </p>
+
+            <p>
+              $$
+              P(s' \mid s, a_1, a_2, \dots, a_N)
+              $$
+            </p>
+
+            <p>
+              now agent i only controls $a_i$ , not the rest actions
+              $a_{-i}$
+            </p>
+
+            <p>
+              but next state depends on them so from $a_i$ agent
+              perspective ,
+            </p>
+
+            <p>
+              next state distribution given only its action must average
+              over what other agents might do. So marginalization, also see agent work like
+            </p>
+
+            <p>
+              $$
+              P(s' \mid s, a_i, a_{-i})
+              $$
+            </p>
+
+            <p>
+              $$
+              P(s' \mid s, a_i)
+              =
+              \sum_{a_{-i}}
+              P(s' \mid s, a_i, a_{-i})
+              P(a_{-i} \mid s)
+              $$
+            </p>
+
+            <p>
+              $$
+              P(a_{-i} \mid s)
+              =
+              \prod_{j \ne i}
+              \pi_j(a_j \mid s_j)
+              $$
+            </p>
+
+            <p>
+              other agent policies
+            </p>
+
+            <p>
+              $$
+              \pi_j(a_j \mid s_j)
+              $$
+            </p>
+
+            <p>
+              now each actor so like multiple actors
+            </p>
+
+            <p>
+              but our marginalization would cause non stationarity as
+              policy will change So critic directly sees all actions
+            </p>
+
+            <p>
+              $$
+              Q_i^\mu (s, a_1, a_2, \dots, a_n)
+              $$
+            </p>
+
+            <p>
+              So critic is centralized but actors aren't, here o is for observation
+            </p>
+
+            <p>
+              $$
+              a_i
+              =
+              \mu_i(o_i)
+              $$
+            </p>
+
+            <p>
+              $$
+              Q_i^\mu
+              (
+              \vec{o},
+              a_1,
+              \dots,
+              a_n
+              )
+              $$
+            </p>
+
+            <p>
+              ↓
+            </p>
+
+            <p>
+              $$
+              \vec{o}
+              =
+              (o_1, \dots, o_n),
+              \qquad
+              \vec{\mu}
+              =
+              (\mu_1, \dots, \mu_n) &nbsp;&nbsp; by &nbsp;&nbsp; \vec\theta = (\theta_1, \dots, \theta_n ),
+              \qquad
+              \vec{a}
+              =
+              (a_1, \dots, a_n)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              Actor update
+            </p>
+
+            <p>
+              $$
+              \nabla_{\theta_i} J(\theta_i)
+              =
+              E_{\vec{o}, \vec{a}}
+              \left[
+              \nabla_{a_i}
+              Q_i^\mu
+              (
+              \vec{o},
+              a_1,
+              \dots,
+              a_n
+              )
+              \;
+              \nabla_{\theta_i}
+              \mu_{\theta_i}(o_i)
+              \Big|
+              _{a_i=\mu_{\theta_i}(o_i)}
+              \right]
+              $$
+            </p>
+
+            <p>
+              Critic update
+            </p>
+
+            <p>
+              $$
+              L(\theta_i)
+              =
+              E_{\vec{o}, a_1, \dots, a_n, r_1, \dots, r_n, \vec{o}'}
+              \left[
+              \left(
+              Q_i^\mu
+              (
+              \vec{o},
+              a_1,
+              \dots,
+              a_n
+              )
+              - y
+              \right)^2
+              \right]
+              $$
+            </p>
+
+            <p>
+              ↓
+            </p>
+
+            <p>
+              $$
+              y
+              =
+              r_i
+              +
+              \gamma
+              Q_i^{\vec{\mu}'}
+              (
+              \vec{o}',
+              a_1',
+              \dots,
+              a_n'
+              )
+              \Big|
+              _{a_j'=\mu_j'(o_j')}
+              $$
+            </p>
+
+            <p>
+              So here
+            </p>
+
+            <p>
+              $$
+              a_j' = \mu_j'(o_j')
+              $$
+            </p>
+
+            <p>
+              in some MARL others agent policy is inaccessible
+            </p>
+
+            <p>
+              So agent i may not have access to policies $\mu_j$ or
+              $\mu_j'$
+            </p>
+
+            <p>
+              So without knowing $\mu_j'$ we can't get
+              $a_j'$ &nbsp;&nbsp; For target $Q_i^{\mu'}(\dots)$ &nbsp;&nbsp; blocking critic update.
+            </p>
+
+            <p>
+              So then each agent i learn approximation $\mu_{ji}$ for
+              other agents j .
+            </p>
+
+            <p>
+              then loss is just log likelihood
+            </p>
+
+            <p>
+              $$
+              L(\phi_{ji})
+              =
+              -
+              E_{o_j, a_j}
+              \left[
+              \log \mu_{ji}(a_j \mid o_j)
+              +
+              \lambda
+              H(\mu_{ji})
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section id="ppo" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">PPO & TRPO</h2>
+            <h3 class="text-xl font-bold text-gray-900 font-sans">TRPO</h3>
+            <p>
+              now in TRPO we just clip or stop the $\pi_{\text{old}}$ to change
+              or update too much / wildly
+            </p>
+
+            <p>
+              $$
+              J(\theta)
+              =
+              E_{s \sim p^{\pi_{\text{old}}}, \;
+              a \sim \pi_{\text{old}}}
+              \left[
+              \frac{\pi_\theta(a \mid s)}
+              {\pi_{\text{old}}(a \mid s)}
+              \;
+              \hat{A}^{\pi_{\text{old}}}(s,a)
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              E_{s \sim p^{\pi_{\text{old}}}}
+              \left[
+              D_{KL}
+              \big(
+              \pi_{\text{old}}(\cdot \mid s)
+              \,\|\,
+              \pi_\theta(\cdot \mid s)
+              \big)
+              \right]
+              \le \delta
+              $$
+            </p>
+
+            <h3 class="text-xl font-bold text-gray-900 font-sans">PPO</h3>
+            <p>
+              in PPO we use clipping as KL div might get complex
+            </p>
+
+            <p>
+              $$
+              r(\theta)
+              =
+              \frac{\pi_\theta(a \mid s)}
+              {\pi_{\text{old}}(a \mid s)}
+              $$
+            </p>
+
+            <p>
+              $$
+              J^{\text{TRPO}}(\theta)
+              =
+              E
+              \left[
+              r(\theta)
+              \hat{A}^{\pi_{\text{old}}}(s,a)
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              J^{\text{CLIP}}(\theta)
+              =
+              E
+              \left[
+              \min\left(
+              r(\theta)\hat{A}^{\pi_{\text{old}}}(s,a),
+              \text{clip}(r(\theta),1-\epsilon,1+\epsilon)\hat{A}^{\pi_{\text{old}}}(s,a)
+              \right)
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section id="ppo-failures" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">PPO Failure Modes</h3>
+            <p>
+              3 failure modes are → sensitive to initialization when local
+              optimal action are close to initialization, discrete action space with sparse high
+              PPO is unstable when rewards , standard PPO might stuck at suboptimal actions. Continuous action space PPO
+              is
+              unstable when rewards
+              vanish outside suboptimal actions.
+            </p>
+
+            <p>
+              see
+            </p>
+
+            <p>
+              $$
+              \pi(a \mid s)
+              \sim
+              \mathcal{N}(\mu(s), \sigma(s))
+              $$
+            </p>
+
+            <p>
+              now this can be any numbers
+              say $a_{\text{raw}} = 2.3$ but env clips to 1
+              now reward computed using $a_{\text{env}}$
+              but $\pi_{\text{old}}(a_{\text{raw}} \mid s)$ ,
+              $\pi_{\text{new}}(a_{\text{raw}} \mid s)$
+              see the mismatch. also $r(\theta)$
+              is sensitive when $a_{\text{raw}}$ lies in tail of logic formula
+              of prob. dist.
+            </p>
+
+            <p>
+              when action clips to 1 reward is flat so
+              high var × tiny adv
+              $\hat{A} \approx 0$ , $r(\theta)$ fluctuates wildly so
+              high var × tiny adv → terrible signal to noise
+            </p>
+
+            <p>
+              $$
+              D_{KL}
+              (\pi_{\text{old}} \,\|\, \pi_\theta)
+              $$
+              → penalty when $\pi_\theta$ puts low prob
+              on actions that old policy liked
+            </p>
+
+            <p>
+              $$
+              D_{KL}
+              (\pi_\theta \,\|\, \pi_{\text{old}})
+              $$
+              → penalty when $\pi_\theta$ puts high prob
+              on actions old policy considered very unlikely
+            </p>
+          </section>
+
+          <section id="ppg" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Phasic Policy
+              Gradient (PPG)</h2>
+            <p>
+              now PPG → basically shared parameters value
+              policy to value head Sometimes cause good
+              interference , so train in phases
+              hence the name Phasic PG.
+            </p>
+
+            <p>
+              Phase 1 for policy :- nothing changed same loss
+              as prev just value head is frozen
+            </p>
+
+            <p>
+              $$
+              L_{\text{CLIP}}(\theta)
+              =
+              E
+              \left[
+              \min\left(
+              r(\theta)\hat{A},
+              \text{clip}(r(\theta),1-\epsilon,1+\epsilon)\hat{A}
+              \right)
+              \right]
+              $$
+            </p>
+
+
+            <p>
+              Phase 2 Auxiliary phase :- here value improvement +
+              distillation into policy.
+            </p>
+
+            <p>
+              $$
+              L_{\text{joint}}
+              =
+              L_{\text{aux}}
+              +
+              \beta_{\text{clone}}
+              \;
+              E_t
+              \left[
+              KL
+              \big(
+              \pi_{\text{old}}(\cdot \mid s_t),
+              \pi_\theta(\cdot \mid s_t)
+              \big)
+              \right]
+              $$
+            </p>
+
+            <p>
+              ↓
+            </p>
+
+            <p>
+              $$
+              L_{\text{aux}}
+              =
+              L_{\text{value}}
+              =
+              E_t
+              \left[
+              \frac{1}{2}
+              \left(
+              V_\omega(s_t)
+              -
+              \hat{V}_t^{\text{targ}}
+              \right)^2
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section id="acer" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">ACER (Actor-Critic
+              with Replay)</h2>
+            <p>
+              how very imp was ACER method uses Retrace in Q value
+              like actor critic off-policy just uses sampling ratio
+              then why it needs this thing ?
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              see to make a on policy things off policy we have to
+              introduce the imp. sampling ratio right.
+            </p>
+
+            <p>
+              now see in actor critic off policy it is single
+              step learning like
+            </p>
+
+            <p>
+              $$
+              Q(s_t, a_t)
+              \leftarrow
+              r
+              +
+              \gamma
+              V(s_{t+1})
+              $$
+            </p>
+
+            <p>
+              but this is bootstrapped estimate means assuming our
+              prediction is true . so there is bias & hence
+              it might be slow & take more iterations to converge.
+            </p>
+
+            <p>
+              also in off policy AC the policies aren't that drifted
+            </p>
+
+            <p>
+              also actor critic is more sensitive to critic bias cause
+              actor literally follows critic's advantage estimate.
+              & if it had bias then it might yolo sometimes hence
+              ACER wants better estimate. so that multi step or
+              n-step learning gives but there is high variance.
+            </p>
+
+            <p>
+              now in 1 step we scale by ratio $\rho_t$
+              in n-step its like $\rho_t \times \rho_{t+1} \times \rho_{t+2} \dots$ .
+              So n-step becomes instability source.
+            </p>
+
+            <p>
+              this becomes instability source.
+            </p>
+
+            <p>
+              in ACER we use replay buffer so policies can differ
+              a lot.
+            </p>
+
+            <p>
+              and in pure off policy Q learning we just use
+            </p>
+
+            <p>
+              $$
+              \max_{a'}
+              Q(s', a')
+              $$
+            </p>
+
+            <p>
+              instead of
+            </p>
+
+            <p>
+              $$
+              \sum_{a'}
+              \pi(a'|s')
+              Q(s',a')
+              $$
+            </p>
+
+            <p>
+              hence no imp sampling ratio needed. cause no policy
+              evaluation at all.
+            </p>
+
+            <p>
+              In actor critic since 1 step just one ratio term
+              but in ACER its a product hence problem.
+            </p>
+          </section>
+
+          <section id="retrace" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Retrace & Importance Sampling</h3>
+            <p>
+              So in ACER → Multi step returns, off policy correction, Replay buffer
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              see
+            </p>
+
+            <p>
+              $$
+              \delta_t
+              =
+              R_t
+              +
+              \gamma
+              E_{a \sim \pi}
+              Q(S_{t+1}, a)
+              -
+              Q(S_t, A_t)
+              $$
+            </p>
+
+            <p>
+              → future update using the current
+              policy $\pi$.
+            </p>
+
+            <p>
+              $$
+              Q(S_t, A_t)
+              \leftarrow
+              Q(S_t, A_t)
+              +
+              \alpha
+              \delta_t
+              $$
+            </p>
+
+            <p>
+              so the update
+            </p>
+
+            <p>
+              $$
+              \Delta Q(S_t, A_t)
+              =
+              \alpha
+              \delta_t
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              now introducing imp sampling
+            </p>
+
+            <p>
+              $$
+              \Delta Q^{\text{imp}}(S_t, A_t)
+              =
+              \gamma^t
+              \prod_{1 \le \tau \le t}
+              \frac{\pi(A_\tau | S_\tau)}
+              {\beta(A_\tau | S_\tau)}
+              \;
+              \delta_t
+              $$
+            </p>
+
+            <p>
+              now this would have high variance so
+            </p>
+
+            <p>
+              $$
+              \Delta Q^{\text{ret}}(S_t, A_t)
+              =
+              \gamma^t
+              \prod_{1 \le \tau \le t}
+              \min
+              \left(
+              c,
+              \frac{\pi(A_\tau|S_\tau)}
+              {\beta(A_\tau|S_\tau)}
+              \right)
+              \;
+              \delta_t
+              $$
+            </p>
+
+            <p>
+              so ACER uses this as target
+            </p>
+
+            <p>
+              $$
+              \left(
+              Q^{\text{ret}}(s_t, a_t)
+              -
+              Q(s_t,a_t)
+              \right)^2
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              so acer pg
+            </p>
+
+            <p>
+              $$
+              \hat{g}_t^{\text{acer}}
+              =
+              \omega_t
+              \left(
+              Q^{\text{ret}}(S_t, A_t)
+              -
+              V_\omega(S_t)
+              \right)
+              \nabla_\theta
+              \ln
+              \pi_\theta(A_t | S_t)
+              $$
+            </p>
+
+            <p>
+              $$
+              \omega_t
+              =
+              \frac{\pi(A_t | S_t)}
+              {\beta(A_t | S_t)}
+              $$
+            </p>
+
+            <p>
+              see Value is a baseline & its
+              located on current policy , $Q(s,a)$
+              need correction cause we evaluating a
+              specific action $a$ taken by behavior policy
+            </p>
+
+            <p>
+              & there is a $\omega_t$ cause at the actor level
+              & at the critic level.
+            </p>
+
+            <p>
+              now this eqn also might have high variance
+              as $\omega_t$ might be large.
+            </p>
+
+            <p>
+              so truncate aggressively + correct truncation bias
+            </p>
+
+            <p>
+              $$
+              \min(c, \omega_t)
+              \left(
+              Q^{\text{ret}} - V
+              \right)
+              \nabla
+              \log
+              \pi(A_t | S_t)
+              $$
+            </p>
+
+            <p>
+              $$
+              E_{a \sim \pi_\theta}
+              \left[
+              \max(0, \omega(a) - c)
+              \frac{Q(s,a) - V(S_t)}
+              {\omega(a)}
+              \nabla
+              \log
+              \pi(a|S_t)
+              \right]
+              $$
+            </p>
+
+            <p>
+              alright see in the first term we reduced the
+              thing $\omega - c$ so now we add that & see
+              the action coming from behavior policy earlier
+              here we make that $a \sim \pi_\theta$ cause we trying
+              to estimate expectation under current policy $\pi$.
+            </p>
+
+            <p>
+              So
+            </p>
+
+            <p>
+              $$
+              E_\beta
+              \left[
+              \omega(a)
+              F(a)
+              \right]
+              =
+              E_\pi
+              \left[
+              F(a)
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section id="sac" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Soft Actor-Critic
+              (SAC)</h2>
+            <p>
+              now SAC (soft actor critic) → off policy
+            </p>
+
+            <p>
+              $$
+              J(\theta)
+              =
+              \sum_{t=1}^{T}
+              E_{(s_t,a_t)\sim P_{\pi_\theta}}
+              \left[
+              r(s_t,a_t)
+              +
+              \alpha
+              H(\pi_\theta(\cdot|s_t))
+              \right]
+              $$
+            </p>
+
+            <p>
+              ← trained with policy $\pi_\theta$
+            </p>
+
+            <p>
+              see there is entropy maximization as well so
+              it keeps on exploring , here policy is stochastic
+              one as deterministic one not makes sense.
+            </p>
+
+            <p>
+              $$
+              H(\pi(\cdot|S_t))
+              =
+              -
+              E_{a\sim\pi}
+              \left[
+              \log \pi(a|S_t)
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              now in classic vs soft like how reward & value func would change
+            </p>
+
+            <p>
+              reward
+            </p>
+
+            <p>
+              $$
+              r_t
+              \quad \rightarrow \quad
+              r_t + \alpha H(\pi(\cdot|S_t))
+              $$
+            </p>
+
+            <p>
+              Value
+            </p>
+
+            <p>
+              $$
+              V^\pi(s)
+              =
+              E[R_t \mid S_t=s]
+              \quad \rightarrow \quad
+              E
+              \left[
+              R_t
+              +
+              \alpha
+              \sum_{k=t}^{\infty}
+              H_k
+              \;\middle|\;
+              S_t=s
+              \right]
+              $$
+            </p>
+
+            <p>
+              Q func
+            </p>
+
+            <p>
+              $$
+              Q^\pi(s,a)
+              =
+              E
+              \left[
+              R_t
+              \;\middle|\;
+              S_t=s, A_t=a
+              \right]
+              \quad \rightarrow \quad
+              r(s,a)
+              +
+              \gamma
+              E_{s'}
+              \left[
+              V^\pi(s')
+              \right]
+              $$
+            </p>
+
+            <p>
+              Now these two are from classic one basically as reward changed so functions are also changing
+            </p>
+
+            <p>
+              $$
+              V^\pi(s)
+              =
+              E_{a\sim\pi}
+              \left[
+              Q^\pi(s,a)
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              R_t
+              =
+              \sum_{k=t}^{\infty}
+              \gamma^{k-t}
+              r_k
+              $$
+            </p>
+
+            <p>
+              soft return
+            </p>
+
+            <p>
+              $$
+              R_t^{\text{soft}}
+              =
+              \sum_{k=t}^{\infty}
+              \gamma^{k-t}
+              \left(
+              r_k
+              +
+              \alpha
+              H(\pi(\cdot|S_k))
+              \right)
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              optimal soft
+            </p>
+
+            <p>
+              $$
+              Q^*(s,a)
+              =
+              r(s,a)
+              +
+              \gamma
+              E_{s'\sim p(\cdot|s,a)}
+              \left[
+              V^*(s')
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              V^*(s)
+              =
+              E_{a\sim\pi^*}
+              \left[
+              Q^*(s,a)
+              -
+              \alpha
+              \log \pi^*(a|s)
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              now soft RL definitions
+            </p>
+
+            <p>
+              $$
+              R_t^{\text{soft}}
+              =
+              \sum_{k=t}^{\infty}
+              \gamma^{k-t}
+              (r_k + \alpha H(\pi(\cdot|S_k)))
+              $$
+            </p>
+
+            <p>
+              $$
+              V^\pi(s)
+              =
+              E_{a\sim\pi}
+              \left[
+              Q^\pi(s,a)
+              -
+              \alpha
+              \log \pi(a|s)
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              Q^\pi(s,a)
+              =
+              r(s,a)
+              +
+              \gamma
+              E_{s'\sim p(\cdot|s,a)}
+              \left[
+              V^\pi(s')
+              \right]
+              $$
+            </p>
+          </section>
+
+          <section id="sac-objectives" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">SAC Objectives & Losses</h3>
+            <p>
+              now MSE losses
+            </p>
+
+            <p>
+              $$
+              J_V(\psi)
+              =
+              E_{s_t \sim D}
+              \left[
+              \frac{1}{2}
+              \left(
+              V_\psi(s_t)
+              -
+              E_{a_t\sim\pi_\theta}
+              [
+              Q_\omega(s_t,a_t)
+              -
+              \log \pi_\theta(a_t|s_t)
+              ]
+              \right)^2
+              \right]
+              $$
+            </p>
+
+            <p>
+              $$
+              \nabla_\psi J_V(\psi)
+              =
+              \nabla_\psi V_\psi(s_t)
+              \left(
+              V_\psi(s_t)
+              -
+              Q_\omega(s_t,a_t)
+              +
+              \log \pi_\theta(a_t|s_t)
+              \right)
+              $$
+            </p>
+
+            <p>
+              D is replay buffer
+            </p>
+
+            <p>
+              soft Q func
+            </p>
+
+            <p>
+              $$
+              J_Q(\omega)
+              =
+              E_{(s_t,a_t)\sim D}
+              \left[
+              \frac{1}{2}
+              \left(
+              Q_\omega(s_t,a_t)
+              -
+              (r(s_t,a_t)
+              +
+              \gamma
+              E_{s_{t+1}}
+              [V_\psi(s_{t+1})])
+              \right)^2
+              \right]
+              $$
+            </p>
+
+            <p>
+              here $\Phi$ is target value func
+            </p>
+          </section>
+
+          <section id="boltzmann" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">Boltzmann Distribution & Equilibrium</h3>
+            <p>
+              now there is a thing called Boltzmann distribution related to equilibrium systems.
+            </p>
+
+            <p>
+              $$
+              P(E_i)
+              =
+              \frac{1}{Z}
+              e^{-E_i / k_B T}
+              $$
+            </p>
+
+            <p>
+              $$
+              Z
+              =
+              \sum_{i=1}^{N}
+              e^{-E_i / k_B T}
+              $$
+            </p>
+
+            <p>each state i has a Energy that is $E_i$. probability of finding a particular state i with particular
+              energy
+              is
+              proportional to exponential of energy
+              divided by Boltzmann constant & temperature. $Z$ is partition function basically normalizing constant.
+            </p>
+
+            <p>
+              and as they are probabilities
+            </p>
+
+            <p>
+              $$
+              \sum_{i=1}^{N} P(E_i) = 1
+              $$
+            </p>
+
+            <p>
+              now again our reward was
+            </p>
+
+            <p>
+              $$
+              \mathbb{E}[Q(s,a)] + \alpha H(\pi)
+              $$
+            </p>
+
+            <section class="space-y-4">
+              <p>
+                solving a constrained problem so calculus tells optimal solution should satisfy
+              </p>
+
+              <p>
+                $$
+                \pi^*(a|s)
+                \propto
+                \exp\!\left(
+                \frac{Q(s,a)}{\alpha}
+                \right)
+                $$
+              </p>
+
+              <p>
+                see this RHS is Boltzmann over Q
+                this as target so
+                so KL Div would make this as target so
+                our policy go toward that
+              </p>
+
+              <p>
+                $$
+                \pi_{\text{new}}
+                =
+                \arg\min_{\pi' \in \Pi}
+                D_{KL}
+                \left(
+                \pi'(\cdot|s)
+                \,\bigg\|\,
+                \frac{
+                \exp(Q^{\text{old}}(s,\cdot)/\alpha)
+                }{
+                Z^{\text{old}}(s)
+                }
+                \right)
+                $$
+              </p>
+
+              <p>
+                policy objective
+              </p>
+
+              <p>
+                $$
+                J_\pi(\theta)
+                =
+                \nabla_\theta
+                D_{KL}
+                \left(
+                \pi_\theta(\cdot|s_t)
+                \,\bigg\|\,
+                \frac{
+                \exp(Q_\omega(s_t,\cdot)/\alpha)
+                }{
+                Z_\omega(s_t)
+                }
+                \right)
+                $$
+              </p>
+
+              <p>
+                $$
+                =
+                E_{a \sim \pi_\theta}
+                \left[
+                \log \pi_\theta(a_t|s_t)
+                -
+                \frac{1}{\alpha}
+                Q_\omega(s_t,a_t)
+                +
+                \log Z_\omega(s_t)
+                \right]
+                $$
+              </p>
+
+              <p>
+                here $Z_\omega(s_t)$ is partition func to normalize the
+                distribution , as it not depend on action so
+                its grad will be zero & its complex to
+                calc hence this is good.
+              </p>
+
+              <p>
+                also $\pi_\theta$ might not able to represent arbitrary
+                distribution so we restrict to simpler one like
+                Gaussian , GMM or some more.
+              </p>
+
+              <p>
+                as if Gaussian
+              </p>
+
+              <p>
+                $$
+                \pi_\theta(a|s)
+                =
+                \mathcal{N}
+                \big(
+                \mu_\theta(s),
+                \sigma_\theta(s)
+                \big)
+                $$
+              </p>
+
+              <p>
+                hence if more expressive $\pi$ → better approximation of Boltzmann
+                → good perform → hard optimization & compute.
+              </p>
+            </section>
+
+
+          </section>
+
+          <section class="space-y-4">
+            <p>
+              see these loss was
+            </p>
+
+            <p>
+              $$
+              J_\pi(\theta)
+              =
+              \mathbb{E}_{a_t \sim \pi_\theta}
+              \Big[
+              \alpha \log \pi_\theta(a_t|s_t)
+              -
+              Q_\omega(s_t,a_t)
+              +
+              \log Z_\omega(s_t)
+              \Big]
+              $$
+            </p>
+
+            <p>
+              here $\alpha$ this temp is like we want
+              entropy to be like $\ge H_0$ a constant like
+              to make it explorable
+            </p>
+
+            <p>
+              So now this is constraint optimization with
+              constraint so we used lagrangian concept &
+            </p>
+
+            <p>
+              maximize expected return
+              subject to entropy constraint
+            </p>
+
+            <p>
+              $$
+              \mathbb{E}
+              \big[
+              -\log \pi_\theta(a_t|s_t)
+              \big]
+              \ge H_0
+              $$
+            </p>
+
+            <p>
+              Lagrangian:
+            </p>
+
+            <p>
+              $$
+              \mathcal{L}
+              =
+              \mathbb{E}
+              \Big[
+              Q_\omega(s_t,a_t)
+              -
+              \alpha
+              \big(
+              \log \pi_\theta(a_t|s_t)
+              +
+              H_0
+              \big)
+              \Big]
+              $$
+            </p>
+
+            <p>
+              & so the temp ($\alpha$) eqn comes up
+            </p>
+
+            <p>
+              $$
+              J(\alpha)
+              =
+              \mathbb{E}_{a_t \sim \pi_t}
+              \Big[
+              -\alpha \log \pi_t(a_t|s_t)
+              -
+              \alpha H_0
+              \Big]
+              $$
+            </p>
+
+            <p>
+              so $\alpha$ automatically adjusts.
+              if entropy low → increase $\alpha$,
+              if entropy high → decrease $\alpha$
+            </p>
+          </section>
+
+          <section>
+            <section id="td3" class="space-y-4">
+              <h3 class="text-xl font-bold text-gray-900 font-sans">TD3 (Twin Delayed DDPG)</h3>
+              <p>
+                TD3 → Twin Delayed Deep Deterministic Policy Gradient
+              </p>
+            </section>
+
+            <p>
+              main thing is overestimation of value func
+              So policy follows estimation then lead update & it
+              collapses kind of.
+            </p>
+
+            <p>
+              idea inspired from Double Q-learning
+            </p>
+
+            <p>
+              two critic networks
+              take minimum to reduce overestimation bias
+            </p>
+
+            <p>
+              target:
+            </p>
+
+            <p>
+              $$
+              y
+              \leftarrow
+              r_t
+              +
+              \gamma
+              \min_{i=1,2}
+              Q_{\theta_i'}
+              (s', \tilde{a})
+              $$
+            </p>
+
+            <p>
+              $$
+              \tilde{a}
+              =
+              \pi_{\theta'}(s')
+              +
+              \epsilon,
+              \quad
+              \epsilon
+              \sim
+              \text{clip}
+              \big(
+              \mathcal{N}(0,\sigma),
+              -c,
+              c
+              \big)
+              $$
+            </p>
+
+            <p>
+              see sometimes there is artificial peaks in Q at some
+              action , so adding some noise basically
+              neighbours would have pretty low value so it
+              gets down.
+            </p>
+
+            <p>
+              this is target policy smoothing
+            </p>
+
+            <p>
+              and two target critic networks minimum of them
+              would act as target.
+            </p>
+
+            <p>
+              also delayed policy updates
+              critic updated more frequently
+              actor updated slowly
+              to stabilize learning.
+            </p>
+
+          </section>
+
+          <section id="svpg" class="space-y-4">
+            <h3 class="text-xl font-bold text-gray-900 font-sans">SVPG (Stein Variational PG)</h3>
+
+            <p>
+              why learn one policy , learn whole population
+              of em that cooperate & repel
+            </p>
+
+            <p>
+              maintain set of policies
+              $\{ \theta_i \}_{i=1}^N$
+            </p>
+
+            <p>
+              update combines:
+            </p>
+
+            <p>
+              1) policy gradient term → improve return
+            </p>
+
+            <p>
+              2) repulsive term → encourage diversity
+            </p>
+
+            <p>
+              update direction:
+            </p>
+
+            <p>
+              $$
+              \Delta \theta_i
+              =
+              \frac{1}{N}
+              \sum_{j=1}^N
+              \Big[
+              k(\theta_j,\theta_i)
+              \nabla_{\theta_j} J(\theta_j)
+              +
+              \nabla_{\theta_j}
+              k(\theta_j,\theta_i)
+              \Big]
+              $$
+            </p>
+
+            <p>
+              first term → pulls toward high reward,
+              second term → pushes particles apart
+            </p>
+
+            <p>
+              so instead of single optimum
+              you approximate distribution over good policies.
+            </p>
+          </section>
+
+          <section id="impala" class="space-y-4">
+            <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">IMPALA & V-trace
+            </h2>
+            <p>
+              IMPALA method → Importance Weighted Actor-Learner Architecture
+            </p>
+
+            <p>
+              V<sub>θ</sub> → θ , π<sub>φ</sub> → φ , old policy μ
+            </p>
+
+            <p>
+              multi-step corrected target:
+            </p>
+
+            <p>
+              $$
+              V_t
+              =
+              V_\theta(s_t)
+              +
+              \sum_{i=t}^{t+n-1}
+              \gamma^{\,i-t}
+              \Big(
+              \prod_{j=t}^{i-1} c_j
+              \Big)
+              \delta_i
+              $$
+            </p>
+
+            <p>
+              where
+            </p>
+
+            <p>
+              $$
+              \delta_i
+              =
+              \rho_i
+              \big(
+              r_i
+              +
+              \gamma V_\theta(s_{i+1})
+              -
+              V_\theta(s_i)
+              \big)
+              $$
+            </p>
+
+            <p>
+              importance ratios:
+            </p>
+
+            <p>
+              $$
+              \rho_i
+              =
+              \min
+              \left(
+              \bar{\rho},
+              \frac{\pi_\phi(a_i|s_i)}{\mu(a_i|s_i)}
+              \right)
+              $$
+            </p>
+
+            <p>
+              $$
+              c_i
+              =
+              \min
+              \left(
+              \bar{c},
+              \frac{\pi_\phi(a_i|s_i)}{\mu(a_i|s_i)}
+              \right)
+              $$
+            </p>
+
+            <p>
+              single-step case:
+            </p>
+
+            <p>
+              $$
+              V_t
+              =
+              V_\theta(s_t)
+              +
+              \delta_t
+              $$
+            </p>
+
+            <p>
+              and update:
+            </p>
+
+            <p>
+              $$
+              \theta
+              \leftarrow
+              \theta
+              +
+              \alpha
+              \big(
+              V_t
+              -
+              V_\theta(s_t)
+              \big)
+              \nabla_\theta V_\theta(s_t)
+              $$
+            </p>
+
+            <p>
+              pure importance sampling multi-step TD:
+            </p>
+
+            <p>
+              $$
+              V_t
+              =
+              \rho_t \delta_t
+              +
+              \gamma \rho_t \rho_{t+1} \delta_{t+1}
+              +
+              \dots
+              +
+              \gamma^n V_\theta(s_{t+n})
+              $$
+            </p>
+
+            <p>
+              where
+            </p>
+
+            <p>
+              $$
+              \rho_t
+              =
+              \frac{\pi_\phi(a_t|s_t)}{\mu(a_t|s_t)}
+              $$
+            </p>
+
+            <p>
+              variance explodes due to product of ratios
+            </p>
+
+            <p>
+              so instead rewrite using TD errors
+              and clip ratios → V-trace correction
+            </p>
+
+
+            <p>
+              value update:
+            </p>
+
+            <p>
+              $$
+              \Delta \theta
+              =
+              \big(
+              V_t
+              -
+              V_\theta(s_t)
+              \big)
+              \nabla_\theta V_\theta(s_t)
+              $$
+            </p>
+
+            <p>
+              actor update:
+            </p>
+
+            <p>
+              $$
+              \Delta \phi
+              =
+              \rho_t
+              \nabla_\phi
+              \log
+              \pi_\phi(a_t|s_t)
+              \Big(
+              r_t
+              +
+              \gamma V_\theta(s_{t+1})
+              -
+              V_\theta(s_t)
+              \Big)
+              +
+              \nabla_\phi H(\pi_\phi)
+              $$
+            </p>
+
+            <p>
+              summary:
+            </p>
+
+            <p>
+              off-policy correction via clipped is
+              stable multi-step learning
+              decoupled actors generate data under μ
+              learner updates toward π using V-trace
+            </p>
+          </section>
+
+          <p>
+            Hope this helped you & if there was some mistake then you can dm me at @tm23twt username in twitter. Till
+            then
+            keep learning :)
+          </p>
+
+      </article>
+    </div>
+  </div>
+
+  <!-- Mobile TOC Button -->
+  <button id="mobile-toc-btn"
+    class="lg:hidden fixed bottom-6 right-6 bg-orange-600 text-white p-4 rounded-full shadow-lg z-50 flex items-center justify-center">
+    <i data-lucide="menu"></i>
+  </button>
+
+  <!-- Mobile TOC Menu -->
+  <div id="mobile-toc-menu" class="lg:hidden fixed inset-0 bg-orange-50/98 z-40 hidden flex-col p-10 overflow-y-auto">
+    <button id="close-mobile-toc" class="absolute top-6 right-6 text-gray-600 hover:text-orange-600 transition-colors">
+      <i data-lucide="x" class="w-8 h-8"></i>
+    </button>
+    <h2 class="text-2xl font-bold text-orange-900 mb-8 border-b border-orange-200 pb-4">Contents</h2>
+    <nav class="flex flex-col gap-4 text-lg text-gray-800">
+      <a href="#intro" class="hover:text-orange-600 py-1">Introduction</a>
+      <a href="#rl-basics" class="hover:text-orange-600 py-1">RL Basics & Model</a>
+      <a href="#policy" class="hover:text-orange-600 py-1">Policy & Value</a>
+      <a href="#bellman" class="hover:text-orange-600 py-1">Bellman Equations</a>
+      <a href="#mc-td" class="hover:text-orange-600 py-1">MC vs TD Learning</a>
+      <a href="#dqn" class="hover:text-orange-600 py-1">Deep Q-Networks (DQN)</a>
+      <a href="#policy-gradient" class="hover:text-orange-600 py-1">Policy Gradient</a>
+      <a href="#actor-critic" class="hover:text-orange-600 py-1">Actor-Critic Methods</a>
+      <a href="#evolution" class="hover:text-orange-600 py-1">Evolution Strategies</a>
+      <a href="#dpg" class="hover:text-orange-600 py-1">Deterministic PG</a>
+      <a href="#maddpg" class="hover:text-orange-600 py-1">Multi-Agent RL</a>
+      <a href="#ppo" class="hover:text-orange-600 py-1">PPO & TRPO</a>
+      <a href="#sac" class="hover:text-orange-600 py-1">Soft Actor-Critic</a>
+      <a href="#impala" class="hover:text-orange-600 py-1">IMPALA & V-trace</a>
+    </nav>
+  </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Mobile TOC Logic
+    const mobileTocBtn = document.getElementById('mobile-toc-btn');
+    const mobileTocMenu = document.getElementById('mobile-toc-menu');
+    const closeMobileToc = document.getElementById('close-mobile-toc');
+    const tocLinks = mobileTocMenu.querySelectorAll('a');
+
+    mobileTocBtn.addEventListener('click', () => {
+      mobileTocMenu.classList.remove('hidden');
+      mobileTocMenu.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    });
+
+    const closeMenu = () => {
+      mobileTocMenu.classList.add('hidden');
+      mobileTocMenu.classList.remove('flex');
+      document.body.style.overflow = '';
+    };
+
+    closeMobileToc.addEventListener('click', closeMenu);
+    tocLinks.forEach(link => link.addEventListener('click', closeMenu));
+  </script>
+</body>
+
 </html>
