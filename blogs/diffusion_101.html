@@ -1,494 +1,902 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>notes on diffusion models</title>
 
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>notes on diffusion models</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        renderMathInElement(document.body, {
-          delimiters: [
-            { left: "$$", right: "$$", display: true },
-            { left: "$", right: "$", display: false }
-          ]
-        });
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ]
       });
-    </script>
-  </head>
-
-  <body class="bg-orange-50 text-gray-900 w-full max-w-3xl mx-auto px-5 md:px-0 pb-20">
-
-    <header class="mt-12">
-      <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
-        Diffusion models — Langevin & SDE
-      </h1>
-      <p class="text-sm text-gray-600 mt-4 italic">
-        connecting langevin diffusion, SDEs, and diffusion models • jan 2026
-      </p>
-    </header>
-
-    <article class="mt-10 space-y-10 text-lg text-gray-800 leading-relaxed font-serif">
-
-      <section class="space-y-4">
-        <p>
-          There are basically some sections i want to connect & establish a link btw them. First of them being langevin diffusion, see diffusion model rely on Stochastic differential equations & langevin is a specific SDE which is fundamental to understand diffusion. Another one is Ito-SDE we’ll cover it too.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <h2 class="font-bold text-xl">What is langevin diffusion??</h2>
-
-        <p>
-          Langevin diffusion has been discovered in physics to describe the motion of particles driven by random and deterministic forces. Due to the random forces, it is a <strong>stochastic process</strong> that in generative AI describes the evolution of a probability distribution over time.
-        </p>
-
-        <p>
-          Langevin diffusion is often used as a way to sample from a probability distribution p(x). Think of p(x) as a very complex high dimensional distribution that represents a dataset.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>Gaussian mixture is given by a weighted sum of Gaussian distributions:</p>
-
-        <p>
-          $$
-          p(\mathbf{x}) = \sum\limits_{j=1}^{n}q_j \mathcal{N}(\mathbf{x};\mu_i,\Sigma_{i}), \quad \text{where } q_j\in\mathbb{R},\sum\limits_{j=1}^{n}q_j = 1,\mu_i\in\mathbb{R}^2,\Sigma_{i}\in\mathbb{R}^{2\times 2}
-          $$
-        </p>
-
-        <p>
-          namely the density, log-density, score (`gradient of log_density`), and gradient of the density.
-        </p>
-
-        <p>
-          $$
-          \begin{aligned}
-          \mathcal{N}(x;\mu,\Sigma)
-          &= \frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}
-          \exp\!\left(-\frac{1}{2}(x-\mu)^\top \Sigma^{-1}(x-\mu)\right), \\[6pt]
-
-          \log \mathcal{N}(x;\mu,\Sigma)
-          &= -\frac{d}{2}\log(2\pi)
-          - \frac{1}{2}\log|\Sigma|
-          - \frac{1}{2}(x-\mu)^\top \Sigma^{-1}(x-\mu), \\[6pt]
-
-          \nabla_x \log \mathcal{N}(x;\mu,\Sigma)
-          &= -\Sigma^{-1}(x-\mu), \\[6pt]
-
-          \nabla_x \mathcal{N}(x;\mu,\Sigma)
-          &= -\mathcal{N}(x;\mu,\Sigma)\,\Sigma^{-1}(x-\mu).
-          \end{aligned}
-          $$
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now in p(x) peaks are high-probability data (like clear images of cats) and the valleys are low-probability noise, the gradient of p(x) acts like a <strong>compass</strong>. So we use the score to "push" random noise toward the data peaks basically gradient ascent. This process is called Langevin dynamics. Why log is just mathematical convenience cause prob at points might be very low like in orders of -50 then that exponential term removal & since logarithm is a <strong>monotonically increasing function</strong>. This means that the peak of p(x) is in the exact same location as the peak of log p(x).
-        </p>
-
-        <p>
-          <strong>When you combine them, the score function</strong> creates a <strong>vector field.</strong>
-        </p>
-
-        <p>
-          $$
-          \nabla_x \log p(x)
-          = \frac{\nabla_x p(x)}{p(x)}
-          $$
-        </p>
-
-        <img src="../media/diffusion_101/download.png" class="rounded-lg shadow-md" />
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Langevin Diffusion describes a <strong>Stochastic Differential Equation</strong>, i.e. the evolution of random variable or like particle X at time t (X_t) over time t & here W_t is brownian motion, s is the step size
-        </p>
-
-        <p>
-          $$
-          dX_t = \nabla\log p(X_t) + \sqrt{2}W_t
-          $$
-        </p>
-
-        <p>
-          $$
-          X_{t+s} = X_{t}+s\nabla\log p(X_{t})+\sqrt{2s}\epsilon, \quad \epsilon\sim\mathcal{N}(0,\mathbf{I}_d)
-          $$
-        </p>
-
-        <p>
-          In other words, the update of the step of X_t is performed by Going into the direction of the gradient & Adding some random Gaussian noise.
-        </p>
-
-        <p>
-          <strong>Intuitively, the Langevin diffusion is gradient ascent maximing the log-probability injected with random Gaussian noise.</strong>
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now the main thing is that actually we don’t know gradient for the clean data so now we’ll train a neural network (the <strong>Score Estimator</strong>) to predict the gradient of the <em>noisy</em> data. As the noise level drops to zero, the network's "push" becomes more refined, eventually guiding the noise into a perfect sample from the true distribution p(x). This is more in future where in forward pass add noise & then in reward pass our network will try to predict that score / noise which is like gradient ascent.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <h2 class="font-bold text-xl">What the hell is this ItoSDE??</h2>
-
-        <p>
-          SDE describes how <strong>one</strong> particle moves, if you simulate 10,000 particles at once, the <strong>density</strong> of where those particles end up will eventually match the probability distribution p(x) perfectly. How does density comes into play?? now think of this at macroscopic level: all the particles follow the same compass and the same rules of random walking, they will eventually cluster in certain areas. The <strong>density</strong> is simply the "heatmap" of where all those millions of particles are at time t.
-        </p>
-
-        <img src="../media/diffusion_101/download 1.png" class="rounded-lg shadow-md" />
-        <img src="../media/diffusion_101/image.png" class="rounded-lg shadow-md" />
-
-        <p>
-          <strong>Analogy:</strong> Think of a drop of ink in water. The SDE describes the chaotic path of a <em>single</em> molecule of ink. But when you look at the whole glass, you see the ink spreading out into a smooth, predictable cloud.
-        </p>
-
-        <p>
-          So the beauty of stochastic processes comes in studying how X_t+s is related to X_t for a single random particle X. A fundamental stochastic process is a <strong>Brownian motion</strong> W_t. There is a famous partial differential equation (PDE) called the <strong>Fokker-Planck Equation</strong>. It describes how the <em>density</em> of a crowd of particles changes over time if every individual particle is following the SDE above.
-        </p>
-
-        <p>
-          $$
-          W_{t+s} = W_{t} +\sqrt{s} \epsilon\quad\text{where }\epsilon\sim\mathcal{N}(0,1)
-          $$
-        </p>
-
-        <p>
-          A <strong>Stochastic Differential Equation "is an Ordinary DE but just random"</strong>.
-        </p>
-
-        <p>
-          $$
-          \frac{d}{dt}\mathbf{x}(t) = f(\mathbf{x}(t),t)\\[6pt]
-          dX(t) = f(X_t,t)dt+g(t)dW_t
-          $$
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now in the SDE a <em>deterministic</em> drift specified by a function f & <em>random</em> drift specified by a function g.
-        </p>
-
-        <p>
-          $$
-          X_{t+s}\approx X_{t}+s f(X_t,t)+g(t)\sqrt{s}(W_{t+s}-W_{t})\\[6pt]
-          X_{t+s} = X_{t} + sf(X_{t},t)+g(t)\sqrt{s}\epsilon\\[6pt]
-          X_{t+s}|X_t\sim\mathcal{N}(X_{t}+s f(X_t,t),sg^2(t))
-          $$
-        </p>
-
-        <p>
-          so here the mean is shifting towards the deterministic function & variance is by random drift function.
-        </p>
-
-        <p>
-          So <strong>the deterministic drift f describes the infinitesimal change in mean and the volatility function g describes the infinitesimal standard deviation</strong>.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now the imp questions are 
-        </p>
-
-        <p>
-          1. Can we say something about the expectation value or mean E[X_t]?<br>
-          2. Can we say something about the variance V[X_t]?<br>
-          3. Can we say something about the distribution X_t∼pt?
-        </p>
-
-        <p>
-          In general, the distribution of X_t can be relatively complex.
-        </p>
-
-        <p>
-          In order to to be able say more, we have to make the following <strong>assumption of affine drift coefficients</strong>. We assume that f has an affine form, i.e.
-        </p>
-
-        <p>
-          $$
-          f(x,t)=a(t)x+b(t)\\[6pt]
-          X_{t+s}-X_{t}\approx sa(t)X_t+sb(t)+g(t)\sqrt{s}\epsilon \\[6pt]
-          X_{t}|X_0 \sim\mathcal{N}(\mathbb{E}[X_t|X_0],\mathbb{V}[X_t|X_0])
-          $$
-        </p>
-
-        <p>
-          And if you’re curious why affine coefficients basically they help us to calculate the Expectation & variance. something like this & same there is for variance
-        </p>
-
-        <p>
-          $$
-          \begin{align*}
-          \mathbb{E}[X_t|X_0]&=\left(X_0+\int\limits_{0}^{t}\exp(-\int\limits_{0}^{s}a(r)dr)b(s)ds\right)\exp\left(\int\limits_{0}^{t}a(s)ds\right)\\
-          \mathbb{E}[X_t]&=\left(\mathbb{E}[X_0]+\int\limits_{0}^{t}\exp(-\int\limits_{0}^{s}a(r)dr)b(s)ds\right)\exp\left(\int\limits_{0}^{t}a(s)ds\right)
-          \end{align*}
-          $$
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          There are 3 frameworks to build SDEs for diffusion models: <strong>variance-preserving, variance sub-preserving</strong> and <strong>variance-exploding</strong>.
-        </p>
-
-        <p>
-          consider <strong>noise functions</strong> β(t) that satisfy:
-        </p>
-
-        <p>
-          1. β(0)=0<br>
-          2. β′(t)≥0<br>
-          3. β(t)→∞ for t→∞
-        </p>
-
-        <p>
-          This was for variance preserving, next one for variance exploding & then sub variance preserving:
-        </p>
-
-        <p>
-          $$
-          X_{t_{i+1}}=\sqrt{1-(\beta(t_{i+1})-\beta(t_i))}X_i+\sqrt{(\beta(t_{i+1})-\beta(t_i))}\epsilon\\[6pt]
-          q(x_{t+h}|x_{t}) = N (x_{t+h}; x_{t},(\beta(t_{i+1})-\beta(t_i))\mathbb{1})
-          $$
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now in the variance exploding case see what happens to variance it won’t stop at 1 it will keep on inc but the mean value would be same as X_0.
-        </p>
-
-        <p>
-          $$
-          \mathbb{E}[X_t|X_0]=X_0, \quad \mathbb{E}[X_t]=\mathbb{E}[X_0] \\[6pt]
-          \mathbb{V}[X_{t}|X_0] =\beta(t)\\
-          \mathbb{V}[X_{t}] =\mathbb{V}[X_0]+\beta(t)
-          $$
-        </p>
-
-        <p>
-          Now this won’t converge as ofc variance is exploding but there is rescaled version which is just, now the mean remains same but the variance shrinks by factor of beta(t) which makes the variance equals 1. Without this scaling, your SDE is like a <strong>Standard Brownian Motion</strong>. If you let a particle wander forever, it will eventually wander to infinity. There is no "stationary distribution" because the particle just keeps getting further and further away. By rescaling to Y_t, you turn the process into something resembling an <strong>Ornstein-Uhlenbeck (OU) process</strong>.
-        </p>
-
-        <p>
-          $$
-          Y_t=\frac{X_t}{\sqrt{\beta(t)}}
-          $$
-        </p>
-
-        <p>
-          Now the variance for sub-VP SDE is always smaller than the variance for the VP SDE.
-        </p>
-
-        <img src="../media/diffusion_101/variance_sde.png" class="rounded-lg shadow-md" />
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now like we can keep it linear or exponential like in Generative Modeling by Estimating Gradients of the Data Distribution proposed to use a variance-exploding SDE from t=0 to t=T=1 such that the noise scales follow a geometric sequence from standard deviation σmin to σmax:
-        </p>
-
-        <p>
-          $$
-          \Rightarrow \sqrt{\beta(t)}=\sigma_{\text{min}}\left(\frac{\sigma_{\text{max}}}{\sigma_{\text{min}}}\right)^t
-          $$
-        </p>
-
-        <p>
-          in DDPM it was proposed to use a model that corresponds to a variance-preserving SDE running from t0 to t=T=1 setting
-        </p>
-
-        <p>
-          $$
-          \beta(t)=\frac{1}{2}t^2(\beta_{\text{max}}-\beta_{\text{min}})+t\beta_{\text{min}}
-          $$
-        </p>
-
-        <p>
-          the sub VP SDE also uses same beta(t)
-        </p>
-
-        <img src="../media/diffusion_101/diffusion_variance.png" class="rounded-lg shadow-md" />
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          So to give a flow first thing we define how X_t+1 will come up from X_t with B_t now since this would be gaussian we will calculate the expectation & variance. And expectation would relate to f(x, t) & variance with g(t). Now we will get affine coefficients from f(x, t) & hence will get close form equation for mean & variance.
-        </p>
-
-        <img src="../media/diffusion_101/process.png" class="rounded-lg shadow-md" />
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now the main idea comes into play & that is like we can only sample the images that are in dataset with representation p_data but say they are just 10k now what. So see the idea is that noise or normal distribution is what we will sample from & then we’ll run a reverse SDE to reach X0 ∼ p_data.
-        </p>
-
-        <p>
-          So firstly equation for reverse time SDE is:
-        </p>
-
-        <p>
-          $$
-          d\bar{X}_t= \bar{f}(X_t,t)dt + \bar{g}(t)d\bar{W}_t\\[6pt]
-          \bar{X}_{t-s}-\bar{X}_t \approx - s\bar{f}(\bar{X}_t,t)+\sqrt{s}\bar{g}(t)\epsilon \\[6pt]
-          \bar{g}=g \\ 
-          \bar{f}(x,t)=f(x,t)-g^2(t)\frac{\partial}{\partial x}\log p_{t}(x)\\[6pt]
-          d\bar{X}_t= [f(X_t,t)-g^2(t)\frac{\partial}{\partial x}\log p_{t}(\bar{X}_t)]dt + g(t)d\bar{W}_t\\[6pt]
-          \bar{X}_{t-s} \approx \bar{X}_t +s\left[g^2(t)s_{\theta}(\bar{X}_t,t)-f(\bar{X}_t,t)\right]+\sqrt{s}g(t)\epsilon
-          $$
-        </p>
-
-        <p>
-          where p_t(x) is the density of the distribution of X_t.
-        </p>
-
-        <p>
-          Now see here the f(x, t) is a pushing or contractive force that pulls towards the mean 0 in normal forward pass, so in reverse dynamics there is -f(x, t) that makes it act as expansive force with g(t) term that acts as anti-entropy cause it makes in direction of score.
-        </p>
-
-        <p>
-          these methods are called <strong>score-based generative models</strong>: to generate the reverse-time SDE, we "only" need to train a model to predict the score - everything else is defined by us.
-        </p>
-
-        <p>
-          $$
-          s_{\theta}(x,t)=\frac{\partial}{\partial x}\log p_t(x)
-          $$
-        </p>
-
-        <p>
-          Reverse SDE is the continuous-time generalization of Annealed Langevin Dynamics. For the variance exploding SDE, we have that:
-        </p>
-
-        <p>
-          $$
-          \bar{X}_{t-s}\approx\bar{X}_t+h\frac{\partial}{\partial x}\log p_t(\bar{X}_t)+\sqrt{h}\epsilon\\[6pt]
-          h=sg^2(t)\\[6pt]
-          p_t(x_t)=\int \mathcal{N}(x_t;x_0,\beta(t))p_{\text{data}}(x_0)dx_0
-          $$
-        </p>
-
-        <p>
-          As noise decreases it goes to p_data. we anneal the distribution to the data distribution, The advantage of annealed Langevin dynamics is in regions of low probability p_data, we have very poor estimates of the scores (just out of data scarcity). Therefore, upon initialization, one uses a noised version (introducing bias to remove high variance).
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now for the loss part <strong>we can compute loss because it only depends on the conditional distribution which is normally distributed because we assumed affine drift coefficients, like we have shown above how we can get expectation & variance easily</strong>
-        </p>
-
-        <p>
-          $$
-          p_{t|0}(x_t|x_0)=\mathcal{N}(x_t;\mathbb{E}[X_t|X_0=x_0];\mathbb{V}[X_t|X_0=x_0])\\[6pt]
-          \frac{\partial}{\partial x_t}\log p_{t|0}(x_t|x_0)=-\frac{x_t-\mathbb{E}[X_t|X_0=x_0]}{\mathbb{V}[X_t|X_0=x_0]}
-          $$
-        </p>
-
-        <p>
-          and we can use this score network as a denoising network
-        </p>
-
-        <p>
-          $$
-          \epsilon_{\theta}(x_t,t)=-s_{\theta}(x_t,t)\sqrt{\mathbb{V}[X_t|X_0=x_0]}\\
-          s_{\theta}(x_t,t)=-\frac{\epsilon_\theta(x_t,t)}{\sqrt{\mathbb{V}[X_t|X_0=x_0]}}\\[6pt]
-          x_t=\sqrt{\mathbb{V}[X_t|X_0=x_0]}\epsilon+\mathbb{E}[X_t|X_0]
-          $$
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <h2 class="font-bold text-xl">Why then fokker planck equation??</h2>
-
-        <p>
-          Think of the Score as a <strong>Force Field</strong>.
-        </p>
-
-        <p>
-          - <strong>The SDE view:</strong> You are a leaf being blown by a fan (the Score) while also being hit by random raindrops (the Noise). Your path is chaotic.<br>
-          - <strong>The ODE (FPE) view:</strong> You are a drop of water in a pipe. The "pressure" in the pipe is determined by the Score. You just flow smoothly from high pressure to low pressure.
-        </p>
-
-        <p>
-          Even though the "Fan" and the "Pressure" are both derived from the same Score Function, the <strong>way the particle moves</strong> is fundamentally different.
-        </p>
-
-        <p>
-          $$
-          d\bar{X}_t= [f(X_t,t)-g^2(t)\nabla\log p_{t}(\bar{X}_t)]dt + g(t)d\bar{W}_t \\[6pt]
-          d\bar{X}_t= [f(X_t,t)-\frac{1}{2}g^2(t)\nabla\log p_{t}(\bar{X}_t)]dt
-          $$
-        </p>
-
-        <p>
-          <strong>-f(x, t):</strong> acts like an expansion force. It "un-shrinks" the image, pulling it back out from the zero-center.
-        </p>
-
-        <p>
-          <strong>-g^2(t)*score:</strong> This is the <strong>Guided Force</strong>. It uses the "volume" of g(t) to steer the particle. It's the only force that actually knows the difference between a cat and a dog. It fights the randomness to find the features.
-        </p>
-
-        <p>
-          <strong>g(t)dW_t:</strong> (In the SDE version) provides a little bit of "vibration" to make sure the particle doesn't get stuck and explores the whole shape of the cat correctly.
-        </p>
-
-        <p>
-          <strong>The Deterministic ODE (No Jitter):</strong> The gradient (score) will point to the closest peak. The particle will slide into that one peak. This is called <strong>Mode Collapse</strong>.
-        </p>
-
-        <p>
-          <strong>The Stochastic SDE (With Jitter):</strong> The dW_t term provides kick. This jitter allows the particles to explore the whole landscape and represent the entire distribution p(x), not just the local maxima.
-        </p>
-      </section>
-
-      <section class="space-y-4">
-        <p>
-          Now then how do we add randomness in ODE, its basically deterministic so initial noise vector X_t is like picked randomly as starting point in a massive high-dimensional Gaussian space. By picking a different X_t, you are "exploring" the different outcomes.
-        </p>
-
-        <p>
-          $$
-          \bar{X}_{t-s} \approx \bar{X}_t +s\left[g^2(t)s_{\theta}(\bar{X}_t,t)-f(\bar{X}_t,t)\right]+\sqrt{s}g(t)\epsilon \\[6pt]
-          \bar{X}_{t-s}
-          \approx \bar{X}_{t}
-          + s\left[\frac{1}{2} g^2(t)\,\theta(\bar{X}_{t},t)
-          - f(\bar{X}_{t},t)\right]
-          $$
-        </p>
-
-        <p>
-          Now how does the picture of big steps come into play see first of all the step term is in the score & the noise (epsilon) term as well. So if the step becomes big then the chaos or noise also goes big but in case of ODE even if we increase the step size it is just with score so nothing chaotic happens.
-        </p>
-
-        <p>
-          See the score is basically our guiding force & think of g(t) as just temperature like how strong that force is then -f(x, t) is expansive force & then there is epsilon noise. So in SDE if step size is 0.001 then noise ~0.03. Now say we took step size as 0.05 so noise ~0.22 which is huge. A single kick of 0.22 is a massive jump in pixel-space. If the model makes a mistake in the Score at that moment, the giant noise kick will throw the particle into a forbidden zone which is why ODEs are preferred.
-        </p>
-
-        <p>
-          Now in training noise is used but sampling/generation is the game where if noise if used(DDPM) if not (DDIM).
-        </p>
-      </section>
-
-    </article>
+    });
+  </script>
+</head>
+
+<body class="bg-orange-50 text-gray-900 w-full max-w-6xl mx-auto px-5 md:px-8 pb-20 relative">
+
+  <div class="flex flex-col lg:flex-row-reverse gap-10">
+    <!-- Sidebar / TOC -->
+    <aside
+      class="lg:w-72 lg:sticky lg:top-12 self-start bg-orange-100/50 p-6 rounded-2xl border border-orange-200/50 backdrop-blur-sm hidden lg:block">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-orange-800 mb-4 flex items-center gap-2">
+        <i data-lucide="list"></i> Contents
+      </h2>
+      <nav class="space-y-1 text-sm overflow-y-auto max-h-[calc(100vh-10rem)] pr-2">
+        <a href="#intro" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Introduction</a>
+        <a href="#langevin"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Langevin
+          Diffusion</a>
+        <a href="#score-field"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Score
+          & Vector Fields</a>
+        <a href="#ito-sde"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Ito
+          SDEs</a>
+        <a href="#fokker-planck"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Fokker-Planck
+          Eq</a>
+        <a href="#sde-diffusion"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">VP vs
+          VE SDEs</a>
+        <a href="#reverse-sde"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Reverse
+          SDE</a>
+        <a href="#ode-sampler"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Deterministic
+          ODE</a>
+        <a href="#consistency-models"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Consistency Models</a>
+        <a href="#distillation"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Consistency
+          Distillation</a>
+        <a href="#consistency-training"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Consistency
+          Training</a>
+        <a href="#ode-solvers"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Euler
+          & Heun Solvers</a>
+        <a href="#ldm" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Latent Diffusion
+          (LDM)</a>
+        <a href="#semantic-compression"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Perceptual
+          vs Semantic</a>
+        <a href="#latent-regularization"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Latent
+          Regularization</a>
+        <a href="#cascaded"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Cascaded
+          & Augmentation</a>
+        <a href="#unclip"
+          class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">unCLIP
+          (DALL-E 2)</a>
+      </nav>
+    </aside>
+
+    <div class="flex-1 max-w-3xl">
+
+      <header class="mt-12">
+        <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
+          Diffusion models — Langevin & SDE
+        </h1>
+        <p class="text-sm text-gray-600 mt-4 italic">
+          connecting langevin diffusion, SDEs, and diffusion models • jan 2026
+        </p>
+      </header>
+
+      <article class="mt-10 space-y-10 text-lg text-gray-800 leading-relaxed font-serif">
+
+        <section id="intro" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Introduction</h2>
+          <p>
+            There are basically some sections i want to connect & establish a link btw them. First of them being
+            langevin diffusion, see diffusion model rely on Stochastic differential equations & langevin is a specific
+            SDE which is fundamental to understand diffusion. Another one is Ito-SDE we’ll cover it too.
+          </p>
+        </section>
+
+        <section id="langevin" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Langevin Diffusion
+          </h2>
+          <h3 class="text-xl font-bold text-gray-900 font-sans">What is Langevin Diffusion?</h3>
+
+          <p>
+            Langevin diffusion has been discovered in physics to describe the motion of particles driven by random and
+            deterministic forces. Due to the random forces, it is a <strong>stochastic process</strong> that in
+            generative AI describes the evolution of a probability distribution over time.
+          </p>
+
+          <p>
+            Langevin diffusion is often used as a way to sample from a probability distribution p(x). Think of p(x) as a
+            very complex high dimensional distribution that represents a dataset.
+          </p>
+        </section>
+
+        <section class="space-y-4">
+          <p>Gaussian mixture is given by a weighted sum of Gaussian distributions:</p>
+
+          <p>
+            $$
+            p(\mathbf{x}) = \sum\limits_{j=1}^{n}q_j \mathcal{N}(\mathbf{x};\mu_i,\Sigma_{i}), \quad \text{where }
+            q_j\in\mathbb{R},\sum\limits_{j=1}^{n}q_j = 1,\mu_i\in\mathbb{R}^2,\Sigma_{i}\in\mathbb{R}^{2\times 2}
+            $$
+          </p>
+
+          <p>
+            namely the density, log-density, score (`gradient of log_density`), and gradient of the density.
+          </p>
+
+          <p>
+            $$
+            \begin{aligned}
+            \mathcal{N}(x;\mu,\Sigma)
+            &= \frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}
+            \exp\!\left(-\frac{1}{2}(x-\mu)^\top \Sigma^{-1}(x-\mu)\right), \\[6pt]
+
+            \log \mathcal{N}(x;\mu,\Sigma)
+            &= -\frac{d}{2}\log(2\pi)
+            - \frac{1}{2}\log|\Sigma|
+            - \frac{1}{2}(x-\mu)^\top \Sigma^{-1}(x-\mu), \\[6pt]
+
+            \nabla_x \log \mathcal{N}(x;\mu,\Sigma)
+            &= -\Sigma^{-1}(x-\mu), \\[6pt]
+
+            \nabla_x \mathcal{N}(x;\mu,\Sigma)
+            &= -\mathcal{N}(x;\mu,\Sigma)\,\Sigma^{-1}(x-\mu).
+            \end{aligned}
+            $$
+          </p>
+        </section>
+
+        <section id="score-field" class="space-y-4">
+          <h3 class="text-xl font-bold text-gray-900 font-sans">Score Function & Vector Fields</h3>
+          <p>
+            Now in p(x) peaks are high-probability data (like clear images of cats) and the valleys are low-probability
+            noise, the gradient of p(x) acts like a <strong>compass</strong>. So we use the score to "push" random noise
+            toward the data peaks basically gradient ascent. This process is called Langevin dynamics. Why log is just
+            mathematical convenience cause prob at points might be very low like in orders of -50 then that exponential
+            term removal & since logarithm is a <strong>monotonically increasing function</strong>. This means that the
+            peak of p(x) is in the exact same location as the peak of log p(x).
+          </p>
+
+          <p>
+            <strong>When you combine them, the score function</strong> creates a <strong>vector field.</strong>
+          </p>
+
+          <p>
+            $$
+            \nabla_x \log p(x)
+            = \frac{\nabla_x p(x)}{p(x)}
+            $$
+          </p>
+
+          <img src="../media/diffusion_101/download.png" class="rounded-lg shadow-md" />
+        </section>
+
+        <section class="space-y-4">
+          <p>
+            Langevin Diffusion describes a <strong>Stochastic Differential Equation</strong>, i.e. the evolution of
+            random variable or like particle X at time t (X_t) over time t & here W_t is brownian motion, s is the step
+            size
+          </p>
+
+          <p>
+            $$
+            dX_t = \nabla\log p(X_t) + \sqrt{2}W_t
+            $$
+          </p>
+
+          <p>
+            $$
+            X_{t+s} = X_{t}+s\nabla\log p(X_{t})+\sqrt{2s}\epsilon, \quad \epsilon\sim\mathcal{N}(0,\mathbf{I}_d)
+            $$
+          </p>
+
+          <p>
+            In other words, the update of the step of X_t is performed by Going into the direction of the gradient &
+            Adding some random Gaussian noise.
+          </p>
+
+          <p>
+            <strong>Intuitively, the Langevin diffusion is gradient ascent maximing the log-probability injected with
+              random Gaussian noise.</strong>
+          </p>
+        </section>
+
+        <section class="space-y-4">
+          <p>
+            Now the main thing is that actually we don’t know gradient for the clean data so now we’ll train a neural
+            network (the <strong>Score Estimator</strong>) to predict the gradient of the <em>noisy</em> data. As the
+            noise level drops to zero, the network's "push" becomes more refined, eventually guiding the noise into a
+            perfect sample from the true distribution p(x). This is more in future where in forward pass add noise &
+            then in reward pass our network will try to predict that score / noise which is like gradient ascent.
+          </p>
+        </section>
+
+        <section id="ito-sde" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Ito SDEs & Stochastic
+            Processes</h2>
+          <h2 class="font-bold text-xl">What the hell is this ItoSDE??</h2>
+
+          <p>
+            SDE describes how <strong>one</strong> particle moves, if you simulate 10,000 particles at once, the
+            <strong>density</strong> of where those particles end up will eventually match the probability distribution
+            p(x) perfectly. How does density comes into play?? now think of this at macroscopic level: all the particles
+            follow the same compass and the same rules of random walking, they will eventually cluster in certain areas.
+            The <strong>density</strong> is simply the "heatmap" of where all those millions of particles are at time t.
+          </p>
+
+          <img src="../media/diffusion_101/download 1.png" class="rounded-lg shadow-md" />
+          <img src="../media/diffusion_101/image.png" class="rounded-lg shadow-md" />
+
+          <p>
+            <strong>Analogy:</strong> Think of a drop of ink in water. The SDE describes the chaotic path of a
+            <em>single</em> molecule of ink. But when you look at the whole glass, you see the ink spreading out into a
+            smooth, predictable cloud.
+          </p>
+
+          <p>
+            So the beauty of stochastic processes comes in studying how X_t+s is related to X_t for a single random
+            particle X. A fundamental stochastic process is a <strong>Brownian motion</strong> W_t. There is a famous
+            partial differential equation (PDE) called the <strong>Fokker-Planck Equation</strong>. It describes how the
+            <em>density</em> of a crowd of particles changes over time if every individual particle is following the SDE
+            above.
+          </p>
+
+          <p>
+            $$
+            W_{t+s} = W_{t} +\sqrt{s} \epsilon\quad\text{where }\epsilon\sim\mathcal{N}(0,1)
+            $$
+          </p>
+
+          <p>
+            A <strong>Stochastic Differential Equation "is an Ordinary DE but just random"</strong>.
+          </p>
+
+          <p>
+            $$
+            \frac{d}{dt}\mathbf{x}(t) = f(\mathbf{x}(t),t)\\[6pt]
+            dX(t) = f(X_t,t)dt+g(t)dW_t
+            $$
+          </p>
+        </section>
+
+        <section class="space-y-4">
+          <p>
+            Now in the SDE a <em>deterministic</em> drift specified by a function f & <em>random</em> drift specified by
+            a function g.
+          </p>
+
+          <p>
+            $$
+            X_{t+s}\approx X_{t}+s f(X_t,t)+g(t)\sqrt{s}(W_{t+s}-W_{t})\\[6pt]
+            X_{t+s} = X_{t} + sf(X_{t},t)+g(t)\sqrt{s}\epsilon\\[6pt]
+            X_{t+s}|X_t\sim\mathcal{N}(X_{t}+s f(X_t,t),sg^2(t))
+            $$
+          </p>
+
+          <p>
+            so here the mean is shifting towards the deterministic function & variance is by random drift function.
+          </p>
+
+          <p>
+            So <strong>the deterministic drift f describes the infinitesimal change in mean and the volatility function
+              g describes the infinitesimal standard deviation</strong>.
+          </p>
+        </section>
+
+        <section class="space-y-4">
+          <p>
+            Now the imp questions are
+          </p>
+
+          <p>
+            1. Can we say something about the expectation value or mean E[X_t]?<br>
+            2. Can we say something about the variance V[X_t]?<br>
+            3. Can we say something about the distribution X_t∼pt?
+          </p>
+
+          <p>
+            In general, the distribution of X_t can be relatively complex.
+          </p>
+
+          <p>
+            In order to to be able say more, we have to make the following <strong>assumption of affine drift
+              coefficients</strong>. We assume that f has an affine form, i.e.
+          </p>
+
+          <p>
+            $$
+            f(x,t)=a(t)x+b(t)\\[6pt]
+            X_{t+s}-X_{t}\approx sa(t)X_t+sb(t)+g(t)\sqrt{s}\epsilon \\[6pt]
+            X_{t}|X_0 \sim\mathcal{N}(\mathbb{E}[X_t|X_0],\mathbb{V}[X_t|X_0])
+            $$
+          </p>
+
+          <p>
+            And if you’re curious why affine coefficients basically they help us to calculate the Expectation &
+            variance. something like this & same there is for variance
+          </p>
+
+          <p>
+            $$
+            \begin{align*}
+            \mathbb{E}[X_t|X_0]&=\left(X_0+\int\limits_{0}^{t}\exp(-\int\limits_{0}^{s}a(r)dr)b(s)ds\right)\exp\left(\int\limits_{0}^{t}a(s)ds\right)\\
+            \mathbb{E}[X_t]&=\left(\mathbb{E}[X_0]+\int\limits_{0}^{t}\exp(-\int\limits_{0}^{s}a(r)dr)b(s)ds\right)\exp\left(\int\limits_{0}^{t}a(s)ds\right)
+            \end{align*}
+            $$
+          </p>
+        </section>
+
+        <section id="sde-diffusion" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">SDE Frameworks for
+            Diffusion</h2>
+          <p>
+            There are 3 frameworks to build SDEs for diffusion models: <strong>variance-preserving, variance
+              sub-preserving</strong> and <strong>variance-exploding</strong>.
+          </p>
+
+          <p>
+            consider <strong>noise functions</strong> β(t) that satisfy:
+          </p>
+
+          <p>
+            1. β(0)=0<br>
+            2. β′(t)≥0<br>
+            3. β(t)→∞ for t→∞
+          </p>
+
+          <p>
+            This was for variance preserving, next one for variance exploding & then sub variance preserving:
+          </p>
+
+          <p>
+            $$
+            X_{t_{i+1}}=\sqrt{1-(\beta(t_{i+1})-\beta(t_i))}X_i+\sqrt{(\beta(t_{i+1})-\beta(t_i))}\epsilon\\[6pt]
+            q(x_{t+h}|x_{t}) = N (x_{t+h}; x_{t},(\beta(t_{i+1})-\beta(t_i))\mathbb{1})
+            $$
+          </p>
+        </section>
+
+        <section class="space-y-4">
+          <p>
+            Now in the variance exploding case see what happens to variance it won’t stop at 1 it will keep on inc but
+            the mean value would be same as X_0.
+          </p>
+
+          <p>
+            $$
+            \mathbb{E}[X_t|X_0]=X_0, \quad \mathbb{E}[X_t]=\mathbb{E}[X_0] \\[6pt]
+            \mathbb{V}[X_{t}|X_0] =\beta(t)\\
+            \mathbb{V}[X_{t}] =\mathbb{V}[X_0]+\beta(t)
+            $$
+          </p>
+
+          <p>
+            Now this won’t converge as ofc variance is exploding but there is rescaled version which is just, now the
+            mean remains same but the variance shrinks by factor of beta(t) which makes the variance equals 1. Without
+            this scaling, your SDE is like a <strong>Standard Brownian Motion</strong>. If you let a particle wander
+            forever, it will eventually wander to infinity. There is no "stationary distribution" because the particle
+            just keeps getting further and further away. By rescaling to Y_t, you turn the process into something
+            resembling an <strong>Ornstein-Uhlenbeck (OU) process</strong>.
+          </p>
+
+          <p>
+            $$
+            Y_t=\frac{X_t}{\sqrt{\beta(t)}}
+            $$
+          </p>
+
+          <p>
+            Now the variance for sub-VP SDE is always smaller than the variance for the VP SDE.
+          </p>
+
+          <img src="../media/diffusion_101/variance_sde.png" class="rounded-lg shadow-md" />
+        </section>
+
+        <section class="space-y-4">
+          <p>
+            Now like we can keep it linear or exponential like in Generative Modeling by Estimating Gradients of the
+            Data Distribution proposed to use a variance-exploding SDE from t=0 to t=T=1 such that the noise scales
+            follow a geometric sequence from standard deviation σmin to σmax:
+          </p>
+
+          <p>
+            $$
+            \Rightarrow
+            \sqrt{\beta(t)}=\sigma_{\text{min}}\left(\frac{\sigma_{\text{max}}}{\sigma_{\text{min}}}\right)^t
+            $$
+          </p>
+
+          <p>
+            in DDPM it was proposed to use a model that corresponds to a variance-preserving SDE running from t0 to
+            t=T=1 setting
+          </p>
+
+          <p>
+            $$
+            \beta(t)=\frac{1}{2}t^2(\beta_{\text{max}}-\beta_{\text{min}})+t\beta_{\text{min}}
+            $$
+          </p>
+
+          <p>
+            the sub VP SDE also uses same beta(t)
+          </p>
+
+          <img src="../media/diffusion_101/diffusion_variance.png" class="rounded-lg shadow-md" />
+        </section>
+
+        <section class="space-y-4">
+          <p>
+            So to give a flow first thing we define how X_t+1 will come up from X_t with B_t now since this would be
+            gaussian we will calculate the expectation & variance. And expectation would relate to f(x, t) & variance
+            with g(t). Now we will get affine coefficients from f(x, t) & hence will get close form equation for mean &
+            variance.
+          </p>
+
+          <img src="../media/diffusion_101/process.png" class="rounded-lg shadow-md" />
+        </section>
+
+        <section id="reverse-sde" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Reverse-Time SDE &
+            Score Estimation</h2>
+          <p>
+            Now the main idea comes into play & that is like we can only sample the images that are in dataset with
+            representation p_data but say they are just 10k now what. So see the idea is that noise or normal
+            distribution is what we will sample from & then we’ll run a reverse SDE to reach X0 ∼ p_data.
+          </p>
+
+          <p>
+            So firstly equation for reverse time SDE is:
+          </p>
+
+          <p>
+            $$
+            d\bar{X}_t= \bar{f}(X_t,t)dt + \bar{g}(t)d\bar{W}_t\\[6pt]
+            \bar{X}_{t-s}-\bar{X}_t \approx - s\bar{f}(\bar{X}_t,t)+\sqrt{s}\bar{g}(t)\epsilon \\[6pt]
+            \bar{g}=g \\
+            \bar{f}(x,t)=f(x,t)-g^2(t)\frac{\partial}{\partial x}\log p_{t}(x)\\[6pt]
+            d\bar{X}_t= [f(X_t,t)-g^2(t)\frac{\partial}{\partial x}\log p_{t}(\bar{X}_t)]dt + g(t)d\bar{W}_t\\[6pt]
+            \bar{X}_{t-s} \approx \bar{X}_t
+            +s\left[g^2(t)s_{\theta}(\bar{X}_t,t)-f(\bar{X}_t,t)\right]+\sqrt{s}g(t)\epsilon
+            $$
+          </p>
+
+          <p>
+            where p_t(x) is the density of the distribution of X_t.
+          </p>
+
+          <p>
+            Now see here the f(x, t) is a pushing or contractive force that pulls towards the mean 0 in normal forward
+            pass, so in reverse dynamics there is -f(x, t) that makes it act as expansive force with g(t) term that acts
+            as anti-entropy cause it makes in direction of score.
+          </p>
+
+          <p>
+            these methods are called <strong>score-based generative models</strong>: to generate the reverse-time SDE,
+            we "only" need to train a model to predict the score - everything else is defined by us.
+          </p>
+
+          <p>
+            $$
+            s_{\theta}(x,t)=\frac{\partial}{\partial x}\log p_t(x)
+            $$
+          </p>
+
+          <p>
+            Reverse SDE is the continuous-time generalization of Annealed Langevin Dynamics. For the variance exploding
+            SDE, we have that:
+          </p>
+
+          <p>
+            $$
+            \bar{X}_{t-s}\approx\bar{X}_t+h\frac{\partial}{\partial x}\log p_t(\bar{X}_t)+\sqrt{h}\epsilon\\[6pt]
+            h=sg^2(t)\\[6pt]
+            p_t(x_t)=\int \mathcal{N}(x_t;x_0,\beta(t))p_{\text{data}}(x_0)dx_0
+            $$
+          </p>
+
+          <p>
+            As noise decreases it goes to p_data. we anneal the distribution to the data distribution, The advantage of
+            annealed Langevin dynamics is in regions of low probability p_data, we have very poor estimates of the
+            scores (just out of data scarcity). Therefore, upon initialization, one uses a noised version (introducing
+            bias to remove high variance).
+          </p>
+        </section>
+
+        <section class="space-y-4">
+          <p>
+            Now for the loss part <strong>we can compute loss because it only depends on the conditional distribution
+              which is normally distributed because we assumed affine drift coefficients, like we have shown above how
+              we can get expectation & variance easily</strong>
+          </p>
+
+          <p>
+            $$
+            p_{t|0}(x_t|x_0)=\mathcal{N}(x_t;\mathbb{E}[X_t|X_0=x_0];\mathbb{V}[X_t|X_0=x_0])\\[6pt]
+            \frac{\partial}{\partial x_t}\log
+            p_{t|0}(x_t|x_0)=-\frac{x_t-\mathbb{E}[X_t|X_0=x_0]}{\mathbb{V}[X_t|X_0=x_0]}
+            $$
+          </p>
+
+          <p>
+            and we can use this score network as a denoising network
+          </p>
+
+          <p>
+            $$
+            \epsilon_{\theta}(x_t,t)=-s_{\theta}(x_t,t)\sqrt{\mathbb{V}[X_t|X_0=x_0]}\\
+            s_{\theta}(x_t,t)=-\frac{\epsilon_\theta(x_t,t)}{\sqrt{\mathbb{V}[X_t|X_0=x_0]}}\\[6pt]
+            x_t=\sqrt{\mathbb{V}[X_t|X_0=x_0]}\epsilon+\mathbb{E}[X_t|X_0]
+            $$
+          </p>
+        </section>
+
+        <section id="fokker-planck" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Fokker-Planck &
+            Probability Flow</h2>
+          <h3 class="text-xl font-bold text-gray-900 font-sans">Wait, why Fokker-Planck?</h3>
+
+          <p>
+            Think of the Score as a <strong>Force Field</strong>.
+          </p>
+
+          <p>
+            - <strong>The SDE view:</strong> You are a leaf being blown by a fan (the Score) while also being hit by
+            random raindrops (the Noise). Your path is chaotic.<br>
+            - <strong>The ODE (FPE) view:</strong> You are a drop of water in a pipe. The "pressure" in the pipe is
+            determined by the Score. You just flow smoothly from high pressure to low pressure.
+          </p>
+
+          <p>
+            Even though the "Fan" and the "Pressure" are both derived from the same Score Function, the <strong>way the
+              particle moves</strong> is fundamentally different.
+          </p>
+
+          <p>
+            $$
+            d\bar{X}_t= [f(X_t,t)-g^2(t)\nabla\log p_{t}(\bar{X}_t)]dt + g(t)d\bar{W}_t \\[6pt]
+            d\bar{X}_t= [f(X_t,t)-\frac{1}{2}g^2(t)\nabla\log p_{t}(\bar{X}_t)]dt
+            $$
+          </p>
+
+          <p>
+            <strong>-f(x, t):</strong> acts like an expansion force. It "un-shrinks" the image, pulling it back out from
+            the zero-center.
+          </p>
+
+          <p>
+            <strong>-g^2(t)*score:</strong> This is the <strong>Guided Force</strong>. It uses the "volume" of g(t) to
+            steer the particle. It's the only force that actually knows the difference between a cat and a dog. It
+            fights the randomness to find the features.
+          </p>
+
+          <p>
+            <strong>g(t)dW_t:</strong> (In the SDE version) provides a little bit of "vibration" to make sure the
+            particle doesn't get stuck and explores the whole shape of the cat correctly.
+          </p>
+
+          <p>
+            <strong>The Deterministic ODE (No Jitter):</strong> The gradient (score) will point to the closest peak. The
+            particle will slide into that one peak. This is called <strong>Mode Collapse</strong>.
+          </p>
+
+          <p>
+            <strong>The Stochastic SDE (With Jitter):</strong> The dW_t term provides kick. This jitter allows the
+            particles to explore the whole landscape and represent the entire distribution p(x), not just the local
+            maxima.
+          </p>
+        </section>
+
+        <section id="ode-sampler" class="space-y-4">
+          <h3 class="text-xl font-bold text-gray-900 font-sans">Deterministic ODE Sampling</h3>
+          <p>
+            Now then how do we add randomness in ODE, its basically deterministic so initial noise vector X_t is like
+            picked randomly as starting point in a massive high-dimensional Gaussian space. By picking a different X_t,
+            you are "exploring" the different outcomes.
+          </p>
+
+          <p>
+            $$
+            \bar{X}_{t-s} \approx \bar{X}_t
+            +s\left[g^2(t)s_{\theta}(\bar{X}_t,t)-f(\bar{X}_t,t)\right]+\sqrt{s}g(t)\epsilon \\[6pt]
+            \bar{X}_{t-s}
+            \approx \bar{X}_{t}
+            + s\left[\frac{1}{2} g^2(t)\,\theta(\bar{X}_{t},t)
+            - f(\bar{X}_{t},t)\right]
+            $$
+          </p>
+
+          <p>
+            Now how does the picture of big steps come into play see first of all the step term is in the score & the
+            noise (epsilon) term as well. So if the step becomes big then the chaos or noise also goes big but in case
+            of ODE even if we increase the step size it is just with score so nothing chaotic happens.
+          </p>
+
+          <p>
+            See the score is basically our guiding force & think of g(t) as just temperature like how strong that force
+            is then -f(x, t) is expansive force & then there is epsilon noise. So in SDE if step size is 0.001 then
+            noise ~0.03. Now say we took step size as 0.05 so noise ~0.22 which is huge. A single kick of 0.22 is a
+            massive jump in pixel-space. If the model makes a mistake in the Score at that moment, the giant noise kick
+            will throw the particle into a forbidden zone which is why ODEs are preferred.
+          </p>
+
+          <p>
+            Now in training noise is used but sampling/generation is the game where if noise if used(DDPM) if not
+            (DDIM).
+          </p>
+        </section>
+
+        <section id="consistency-models" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Consistency Models
+          </h2>
+          <p>
+            Consistency models as the name suggests is consistent that means whatever be the input the output would
+            always be clean image normally that is $x_0$ but here shown as $x_\epsilon$.
+          </p>
+          <p>
+            For any two time points $t$ & $t'$ on the same trajectory:
+          </p>
+          <p>
+            $$f(x_t,t)=f(x_{t'},t')= x_\epsilon$$
+          </p>
+          <p>
+            There are two ways to train a consistency model: <strong>consistency distillation (CD)</strong> and
+            <strong>consistency training (CT)</strong>.
+          </p>
+        </section>
+
+        <section id="distillation" class="space-y-4">
+          <h3 class="text-xl font-bold text-gray-900 font-sans">Consistency Distillation (CD)</h3>
+          <p>
+            In consistency distillation, you already have a trained diffusion model (the “teacher”). You use it to
+            generate a trajectory.
+            The loss is basically the distance between the output of the target consistency model using a one-step
+            diffusion generated image at $t_n$ with the consistency model output using $x_{t_{n+1}}$.
+          </p>
+          <p>
+            So $x_{t_{n+1}}$ is a noisier sample, and the diffusion model deterministically steps it to a slightly less
+            noisy sample $x_{t_n}$ using something like the probability flow ODE.
+          </p>
+          <p>
+            You feed $x_{t_{n+1}}$ into the student consistency model $f_\theta(x_{t_{n+1}}, t_{n+1})$ and $x_{t_n}$
+            into a target (EMA) consistency model $f_{\theta^-}(x_{t_n}, t_n)$, then minimize the distance between those
+            two outputs.
+          </p>
+          <p>
+            $$
+            \mathcal{L}^N_\text{CD} (\theta, \theta^-; \phi) = \mathbb{E}
+            [\lambda(t_n)d(f_\theta(\mathbf{x}_{t_{n+1}}, t_{n+1}), f_{\theta^-}(\hat{\mathbf{x}}^\phi_{t_n}, t_n)]
+            $$
+          </p>
+        </section>
+
+        <section id="consistency-training" class="space-y-4">
+          <h3 class="text-xl font-bold text-gray-900 font-sans">Consistency Training (CT)</h3>
+          <p>
+            In consistency training, we don't have a pretrained score model, so we must estimate the score ourselves to
+            define local trajectory structure.
+          </p>
+          <p>
+            They use the fact that if you take a clean image $x$ and add Gaussian noise $x_t = x + t z$ where $z \sim
+            \mathcal{N}(0, I)$, then the score has a closed-form unbiased estimator:
+          </p>
+          <p>
+            $$\nabla \log p_t(x_t) \approx -(x_t - x) / t^2$$
+          </p>
+          <p>
+            CT loss is:
+            $$
+            \mathcal{L}^N_\text{CT} (\theta, \theta^-; \phi) = \mathbb{E}
+            [\lambda(t_n)d(f_\theta(\mathbf{x} + t_{n+1} \mathbf{z},\;t_{n+1}), f_{\theta^-}(\mathbf{x} + t_n
+            \mathbf{z},\;t_n)]
+            $$
+          </p>
+        </section>
+
+        <section id="ode-solvers" class="space-y-4">
+          <h3 class="text-xl font-bold text-gray-900 font-sans">Why ODE Solvers Matter?</h3>
+          <p>
+            To move from $t_{n+1}$ to $t_n$, you must numerically integrate the ODE. Since neural networks give you an
+            approximate vector field, we need robust solvers.
+          </p>
+          <p>
+            <strong>Euler’s method</strong> uses the slope at the starting point and assumes it’s constant across the
+            step.
+            <strong>Heun’s method</strong> (second-order) takes an Euler step, evaluates the slope again there, and
+            averages the two, better approximating the trajectory's curvature.
+          </p>
+          <p>
+            This matters because the entire training signal depends on the pair $(x_{t_{n+1}}, x_{t_n})$ lying on the
+            same true probability flow trajectory.
+          </p>
+        </section>
+
+        <section id="ldm" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Latent Diffusion
+            Models (LDM)</h2>
+          <p>
+            Latent Diffusion Models (LDM) loosely decomposes the perceptual compression and semantic compression by
+            first trimming off pixel-level redundancy with an autoencoder and then manipulating/generating semantic
+            concepts with the diffusion process on the learned latent.
+          </p>
+
+          <div class="flex flex-col items-center gap-4 my-8">
+            <img src="../media/diffusion_101/image-distortion-rate.png" class="rounded-lg shadow-md max-w-full"
+              alt="Image Distortion-Rate Curve" />
+            <p class="text-sm text-gray-600 italic">Distortion (RMSE) vs Rate (bits/dim) in Latent Space</p>
+          </div>
+
+          <p>
+            On the vertical axis, you have <strong>distortion (RMSE)</strong>. That’s just reconstruction error — how
+            different the reconstructed image is from the original at the pixel level. Lower is better.
+          </p>
+          <p>
+            On the horizontal axis, you have <strong>rate in “bits per dimension” (bits/dim)</strong>. This is a
+            normalized compression measure: how many bits are used to encode each dimension. Low bits/dim means high
+            compression.
+          </p>
+          <p>
+            On the left (very low rate), distortion explodes. This is where <strong>Semantic Compression</strong>
+            happens. If you barely use any bits, reconstruction is poor, but the "meaning" can still be captured. On the
+            right, distortion is low and decreases slowly, representing <strong>Perceptual Compression</strong> (via
+            Autoencoder + GAN).
+          </p>
+        </section>
+
+        <section id="semantic-compression" class="space-y-4">
+          <h3 class="text-xl font-bold text-gray-900 font-sans">Perceptual vs Semantic Compression</h3>
+          <p>
+            <strong>Perceptual compression</strong> is about preserving how the image looks to us (textures, edges). It
+            removes pixel redundancy.
+            <strong>Semantic compression</strong> is more radical: it stores the <em>meaning</em> of the image and
+            regenerates a plausible image from that meaning.
+          </p>
+          <p>
+            In LDM, the <strong>Autoencoder</strong> handles the perceptual part (removing redundancy), while
+            <strong>Diffusion</strong> handles the semantic modeling (generating meaningful structure).
+          </p>
+          <p>
+            The latent $z$ is NOT just a flat vector. In Stable Diffusion, it's a 3D tensor ($H \times W \times C$). It
+            behaves like a lower-resolution image with learned features.
+          </p>
+        </section>
+
+        <section id="latent-regularization" class="space-y-4">
+          <h3 class="text-xl font-bold text-gray-900 font-sans">Latent Space Regularization</h3>
+          <p>
+            Denoising in latent space is not just a cleanup step; it IS the <strong>generation process</strong>.
+            Diffusion models learn to reverse a gradual noising process. It's like sculpting a statue by gradually
+            removing randomness instead of adding clay.
+          </p>
+          <p>
+            To make training stable, we often use <strong>KL regularization</strong>. This encourages the encoder to
+            make latents look roughly like samples from a standard normal distribution. If the latent space is wildly
+            irregular, diffusion training becomes unstable. KL regularization smooths and shapes this space.
+          </p>
+        </section>
+
+        <section id="cascaded" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Cascaded Diffusion &
+            Augmentation</h2>
+          <p>
+            Generating high-res images (e.g., $1024 \times 1024$) in one shot is computationally expensive.
+            <strong>Cascaded Diffusion</strong> breaks this down:
+          </p>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Stage 1:</strong> Generate a low-resolution image.</li>
+            <li><strong>Stage 2 & 3:</strong> Super-resolve the output of the previous stage.</li>
+          </ul>
+          <p>
+            Each stage conditions on the output of the previous one. However, generated images are imperfect. To make
+            the super-res model robust, we use <strong>Conditioning Augmentation</strong>: intentionally corrupting the
+            low-res input during training so the model learns to handle messy upstream outputs.
+          </p>
+          <p>
+            This can be <strong>Truncated</strong> (stopping the reverse process early) or
+            <strong>Non-truncated</strong> (re-corrupting a clean sample with forward diffusion).
+          </p>
+        </section>
+
+        <section id="unclip" class="space-y-4">
+          <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">unCLIP (DALL-E 2)
+          </h2>
+          <p>
+            <strong>unCLIP</strong> (the core of DALL-E 2) factorization:
+            $$P(x | y) = P(x | c_i, y) \cdot P(c_i | y)$$
+          </p>
+          <p>
+            It splits the task into two parts:
+          </p>
+          <ul class="list-disc pl-6 space-y-2">
+            <li><strong>Prior:</strong> Predicts the CLIP image embedding $c_i$ from the text caption $y$. It generates
+              a semantic vector, not pixels.</li>
+            <li><strong>Decoder:</strong> A diffusion model that generates the final image conditioned on that predicted
+              CLIP image embedding.</li>
+          </ul>
+          <p>
+            Why split? Because CLIP embeddings are powerful semantic summaries. The prior models the semantic
+            distribution, while the decoder models the perceptual image structure.
+          </p>
+        </section>
+
+        <p class="mt-20 text-center text-gray-500 italic pb-10">
+          Hope this helped you & keep learning diffusion baby! DM me at @tm23twt if you find bugs.
+        </p>
+
+      </article>
+    </div>
+  </div>
+
+  <!-- Mobile TOC Button -->
+  <button id="mobile-toc-btn"
+    class="lg:hidden fixed bottom-6 right-6 bg-orange-600 text-white p-4 rounded-full shadow-lg z-50 flex items-center justify-center">
+    <i data-lucide="menu"></i>
+  </button>
+
+  <!-- Mobile TOC Menu -->
+  <div id="mobile-toc-menu" class="lg:hidden fixed inset-0 bg-orange-50/98 z-40 hidden flex-col p-10 overflow-y-auto">
+    <button id="close-mobile-toc" class="absolute top-6 right-6 text-gray-600 hover:text-orange-600 transition-colors">
+      <i data-lucide="x" class="w-8 h-8"></i>
+    </button>
+    <h2 class="text-2xl font-bold text-orange-900 mb-8 border-b border-orange-200 pb-4">Contents</h2>
+    <nav class="flex flex-col gap-4 text-lg text-gray-800">
+      <a href="#intro" class="hover:text-orange-600 py-1">Introduction</a>
+      <a href="#langevin" class="hover:text-orange-600 py-1">Langevin Diffusion</a>
+      <a href="#score-field" class="hover:text-orange-600 py-1">Score & Vector Fields</a>
+      <a href="#ito-sde" class="hover:text-orange-600 py-1">Ito SDEs</a>
+      <a href="#fokker-planck" class="hover:text-orange-600 py-1">Fokker-Planck Eq</a>
+      <a href="#sde-diffusion" class="hover:text-orange-600 py-1">SDE Frameworks</a>
+      <a href="#reverse-sde" class="hover:text-orange-600 py-1">Reverse SDE</a>
+      <a href="#ode-sampler" class="hover:text-orange-600 py-1">ODE Sampling</a>
+      <a href="#consistency-models" class="hover:text-orange-600 py-1">Consistency Models</a>
+      <a href="#distillation" class="hover:text-orange-600 py-1">Consistency Distillation</a>
+      <a href="#consistency-training" class="hover:text-orange-600 py-1">Consistency Training</a>
+      <a href="#ode-solvers" class="hover:text-orange-600 py-1">ODE Solvers</a>
+      <a href="#ldm" class="hover:text-orange-600 py-1">Latent Diffusion (LDM)</a>
+      <a href="#semantic-compression" class="hover:text-orange-600 py-1">Perceptual vs Semantic</a>
+      <a href="#latent-regularization" class="hover:text-orange-600 py-1">Latent Regularization</a>
+      <a href="#cascaded" class="hover:text-orange-600 py-1">Cascaded & Augmentation</a>
+      <a href="#unclip" class="hover:text-orange-600 py-1">unCLIP (DALL-E 2)</a>
+    </nav>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Mobile TOC Logic
+    const mobileTocBtn = document.getElementById('mobile-toc-btn');
+    const mobileTocMenu = document.getElementById('mobile-toc-menu');
+    const closeMobileToc = document.getElementById('close-mobile-toc');
+    const tocLinks = mobileTocMenu.querySelectorAll('a');
+
+    mobileTocBtn.addEventListener('click', () => {
+      mobileTocMenu.classList.remove('hidden');
+      mobileTocMenu.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    });
+
+    const closeMenu = () => {
+      mobileTocMenu.classList.add('hidden');
+      mobileTocMenu.classList.remove('flex');
+      document.body.style.overflow = '';
+    };
+
+    closeMobileToc.addEventListener('click', closeMenu);
+    tocLinks.forEach(link => link.addEventListener('click', closeMenu));
+  </script>
+</body>
 
-    <script>
-      lucide.createIcons();
-    </script>
-  </body>
 </html>
