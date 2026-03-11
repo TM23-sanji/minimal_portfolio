@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linear Algebra & Probability</title>
+
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false }
+                ]
+            });
+        });
+    </script>
+</head>
+
+<body class="bg-orange-50 text-gray-900 w-full max-w-6xl mx-auto px-5 md:px-8 pb-20 relative">
+
+    <div class="flex flex-col lg:flex-row-reverse gap-10">
+        <aside
+            class="lg:w-72 lg:sticky lg:top-12 self-start bg-orange-100/50 p-6 rounded-2xl border border-orange-200/50 backdrop-blur-sm hidden lg:block">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-orange-800 mb-4 flex items-center gap-2">
+                <i data-lucide="list"></i> Contents
+            </h2>
+            <nav class="space-y-1 text-sm overflow-y-auto max-h-[calc(100vh-10rem)] pr-2">
+                <a href="#matrices"
+                    class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">Matrices</a>
+                <a href="#rank_det"
+                    class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Rank
+                    & Determinant</a>
+                <a href="#eigenvectors"
+                    class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Eigenvectors</a>
+                <a href="#svd" class="block py-1 text-gray-700 hover:text-orange-600 transition-colors">SVD</a>
+                <div class="h-4"></div>
+                <a href="#probability"
+                    class="block py-1 text-gray-700 hover:text-orange-600 transition-colors font-bold border-t border-orange-200 pt-2">Probability</a>
+                <a href="#bayes"
+                    class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Bayes'
+                    Theorem</a>
+                <a href="#expectations"
+                    class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Expectations</a>
+                <a href="#distributions"
+                    class="block py-1 text-gray-700 hover:text-orange-600 transition-colors pl-2 border-l border-orange-200">Distributions</a>
+            </nav>
+        </aside>
+
+        <div class="flex-1 max-w-3xl">
+
+            <header class="mt-12">
+                <h1 class="font-serif text-4xl font-bold leading-tight text-gray-950">
+                    Linear Algebra & Probability
+                </h1>
+                <p class="text-sm text-gray-600 mt-4 italic">
+                    orthogonal matrices • projections • eigenvectors • SVD
+                </p>
+            </header>
+
+            <article class="mt-10 space-y-10 text-lg text-gray-800 leading-relaxed font-serif">
+
+                <section id="matrices" class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Matrices
+                    </h2>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Orthogonal Matrix</h3>
+                        <p>
+                            → Column vectors are unit vectors
+                        </p>
+                        <p>
+                            → They are orthogonal means dot product = 0
+                        </p>
+                        <p>
+                            → Just rotation of vector space
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Projection Matrix</h3>
+                        <p>
+                            → Data in 2d scatter, we want to pick or project that in a line
+                        </p>
+                        <p>
+                            → Compress to lower dim so vectors moves to closest point
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Inverse Matrix</h3>
+                        <p>
+                            → Untransformation → if matrix rotate, inverse rotates back
+                        </p>
+                        <p>
+                            → Not defined for zero & projection matrices
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Symmetric Matrix</h3>
+                        <p>
+                            → Should be square, eigenvectors are orthogonal
+                        </p>
+                        <p>
+                            $$S = S^T \text{ for symmetric matrix } S$$
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Transpose</h3>
+                        <p>
+                            → Make columns the rows
+                        </p>
+                        <p>
+                            → $S = S^T$ for $S$ is symmetric
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Orthogonal Q</h3>
+                        <p>
+                            $$Q^T = Q^{-1} \text{ (transpose = inverse)}$$
+                        </p>
+                        <p>
+                            → Note $Q \neq Q^T$
+                        </p>
+                        <p>
+                            → But $Q^T = Q^{-1}$
+                        </p>
+                    </section>
+                </section>
+
+                <section id="rank_det" class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Rank &
+                        Determinant</h2>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Matrix Rank</h3>
+                        <p>
+                            → Number of linearly independent columns (or rows).
+                        </p>
+                        <p>
+                            → Rank 1 matrix: $A = \vec{u} \vec{v}^T$. Every column is a multiple of $\vec{u}$.
+                        </p>
+                        <p>
+                            → Full Rank: $rank(A) = \min(m, n)$.
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Determinant</h3>
+                        <p>
+                            → Volume of the parallelepiped formed by column vectors.
+                        </p>
+                        <p>
+                            → $\det(AB) = \det(A)\det(B)$.
+                        </p>
+                        <p>
+                            → If $\det(A) = 0$, matrix is singular (not invertible, collapses space).
+                        </p>
+                        <p>
+                            → $\det(A) = \prod \lambda_i$ (Product of eigenvalues).
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Trace</h3>
+                        <p>
+                            → Sum of diagonal elements.
+                        </p>
+                        <p>
+                            → $Tr(A) = \sum \lambda_i$ (Sum of eigenvalues).
+                        </p>
+                    </section>
+                </section>
+
+                <section id="eigenvectors" class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">
+                        Eigenvectors</h2>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Definition</h3>
+                        <p>
+                            → Every other vector deviates from their initial direction, eigenvectors stay after
+                            transformation.
+                        </p>
+                        <p>
+                            $$A \vec{v} = \lambda \vec{v}$$
+                        </p>
+                        <p>
+                            → Eigenvector when linear transform they stay on line just scaled (eigenvalue)
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">For Symmetric Matrix</h3>
+                        <p>
+                            $$S = Q \Lambda Q^T$$
+                        </p>
+                        <p>
+                            $$S = \begin{bmatrix} \vdots & \vdots & \vdots \\ c_1 & c_2 & c_3 \\ \vdots & \vdots &
+                            \vdots \end{bmatrix} \begin{bmatrix} \lambda_1 \\ \lambda_2 \\ \lambda_3 \end{bmatrix}
+                            \begin{bmatrix} \vdots & \vdots & \vdots \\ c_1 & c_2 & c_3 \\ \vdots & \vdots & \vdots
+                            \end{bmatrix}^T$$
+                        </p>
+                        <p>
+                            → Rotation → scaling → unrotation (since orthogonal eigenvectors for symmetric matrix $Q^T =
+                            Q^{-1}$)
+                        </p>
+                        <p>
+                            → $C$ = eigenvectors, $\lambda$ = eigenvalues
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Orthogonal Matrix</h3>
+                        <p>
+                            → Equal rotation → eigenvectors in it
+                        </p>
+                        <p>
+                            → It rotates standard basis to eigenvectors
+                        </p>
+                    </section>
+                </section>
+
+                <section id="svd" class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">SVD</h2>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Overview</h3>
+                        <p>
+                            SVD is for any matrix, no restriction on symmetry. Dimension could be different.
+                        </p>
+                        <p>
+                            $$A = U \Sigma V^T$$
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Rectangular Matrix</h3>
+                        <p>
+                            → What rectangular matrix does: basically if $R^2$ & $R^3$ then rectangular matrix is link /
+                            transform
+                        </p>
+                        <p>
+                            $$(2,3) \cdot (3,1) \rightarrow (2,1) = \text{Dimension eraser}$$
+                        </p>
+                        <p>
+                            $$(3,2) \cdot (2,1) \rightarrow (3,1) = \text{Dimension adder}$$
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Left & Right Singular Vectors</h3>
+                        <p>
+                            → $A_{m \times n}$ so if we do $A A^T$ this is symmetric
+                        </p>
+                        <p>
+                            $$S_L = A A^T \text{ (left singular of A)}$$
+                        </p>
+                        <p>
+                            $$S_R = A^T A \text{ (right singular of A)}$$
+                        </p>
+                        <p>
+                            → If $A_{2 \times 3}$:
+                        </p>
+                        <p>
+                            → $[S_L]$ 2×2 would have $u_1, u_2$ (left singular vectors)
+                        </p>
+                        <p>
+                            → $[S_R]$ 3×3 would have $v_1, v_2, v_3$ (right singular vectors)
+                        </p>
+                        <p>
+                            → $S_L$ & $S_R$ are positive semi definite (all eigenvalues $\geq 0$)
+                        </p>
+                        <p>
+                            → They have same (non-zero) eigenvalues
+                        </p>
+                        <p>
+                            → Sort in dec order: $\lambda_1 \geq \lambda_2 \geq \lambda_i \geq 0$
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Singular Values</h3>
+                        <p>
+                            → $\sqrt{\lambda_1}, \sqrt{\lambda_2}, \dots$ are singular values of $A$ ($\sigma_1,
+                            \sigma_2, \dots$)
+                        </p>
+                        <p>
+                            → $\Sigma$ → Rectangular Diagonal, same shape as $A$
+                        </p>
+                        <p>
+                            → $U$ → Orthogonal, normalized eigenvectors of $S_L$ ($A A^T$)
+                        </p>
+                        <p>
+                            → $V$ → Orthogonal, normalized eigenvectors of $S_R$ ($A^T A$)
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Decomposition Form</h3>
+                        <p>
+                            $$A = U \Sigma V^T$$
+                        </p>
+                        <p>
+                            $$A = \begin{bmatrix} | & | \\ u_1 & u_2 \\ | & | \end{bmatrix} \begin{bmatrix} \sigma_1 & 0
+                            & 0 \\ 0 & \sigma_2 & 0 \end{bmatrix} \begin{bmatrix} \text{--- } v_1 \text{ ---} \\
+                            \text{--- } v_2 \text{ ---} \\ \text{--- } v_3 \text{ ---} \end{bmatrix}$$
+                        </p>
+                        <p>
+                            $$A = \sigma_1 \begin{bmatrix} \vdots \\ u_1 \\ \vdots \end{bmatrix} \begin{bmatrix} \cdots
+                            & v_1 & \cdots \end{bmatrix} + \sigma_2 \begin{bmatrix} \vdots \\ u_2 \\ \vdots
+                            \end{bmatrix} \begin{bmatrix} \cdots & v_2 & \cdots \end{bmatrix}$$
+                        </p>
+                        <p>
+                            $$= \sigma_1 u_1 v_1^T + \sigma_2 u_2 v_2^T$$
+                        </p>
+                        <p>
+                            where $u_i$ is a column vector and $v_i^T$ is a row vector (dot product of $u_i$ with each
+                            row of $V^T$)
+                        </p>
+                        <p>
+                            $$= \sum_{i} \sigma_i u_i v_i^T \text{ (rank-1 matrices)}$$
+                        </p>
+                    </section>
+
+                    <section class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Image Compression</h3>
+                        <p>
+                            $$A = U \Sigma V^T = \sum_{r=1}^{rank(A)} \sigma_i u_i v_i^T$$
+                        </p>
+                        <p>
+                            → Sum of rank-1 matrices. In image compression, pick $r = 10$, so only 10 of those
+                            decomposition.
+                        </p>
+                    </section>
+                </section>
+
+                <hr class="border-orange-200 border-dashed my-10">
+
+                <section id="probability" class="space-y-10">
+                    <header>
+                        <h2
+                            class="text-3xl font-bold text-gray-950 font-sans border-b-4 border-orange-300 pb-2 inline-block">
+                            Probability</h2>
+                    </header>
+
+                    <section id="basics" class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans">Basic Rules</h3>
+                        <p>
+                            → Sample Space ($S$): All possible outcomes.
+                        </p>
+                        <p>
+                            → Law of Total Probability: $P(A) = \sum_n P(A|B_n)P(B_n)$.
+                        </p>
+                    </section>
+
+                    <section id="bayes" class="space-y-4">
+                        <h3 class="text-xl font-bold text-gray-900 font-sans italic">Bayes' Theorem</h3>
+                        <div class="bg-orange-100/30 p-6 rounded-xl border border-orange-200 py-10">
+                            $$P(A|B) = \frac{P(B|A)P(A)}{P(B)}$$
+                        </div>
+                        <p>
+                            → **Prior** $P(A)$: Belief before evidence.
+                        </p>
+                        <p>
+                            → **Likelihood** $P(B|A)$: Prob. of evidence given hypothesis.
+                        </p>
+                        <p>
+                            → **Posterior** $P(A|B)$: Belief after evidence.
+                        </p>
+                    </section>
+
+                    <section id="expectations" class="space-y-4">
+                        <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">
+                            Expectations & Variance</h2>
+
+                        <p>
+                            $$E[X] = \sum x P(x) \text{ (Mean / balance point)}$$
+                        </p>
+                        <p>
+                            $$Var(X) = E[(X - \mu)^2] = E[X^2] - (E[X])^2$$
+                        </p>
+
+                        <h4 class="text-lg font-bold mt-6">Covariance</h4>
+                        <p>
+                            → Measure of how two variables move together.
+                        </p>
+                        <p>
+                            $$Cov(X, Y) = E[(X - E[X])(Y - E[Y])]$$
+                        </p>
+                        <p>
+                            → **Covariance Matrix**: symmetric matrix where $\Sigma_{ij} = Cov(X_i, X_j)$.
+                            Connecting back to Lin Alg: This matrix is positive semi-definite!
+                        </p>
+                    </section>
+
+                    <section id="distributions" class="space-y-4">
+                        <h2 class="text-2xl font-bold text-gray-950 font-sans border-b-2 border-orange-200 pb-2">Common
+                            Distributions</h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <h4 class="font-bold">Bernoulli</h4>
+                                <p class="text-sm">Single trial, boolean outcome (success/failure).</p>
+                                <p class="text-sm">$$P(X=1) = p, \quad P(X=0) = 1-p$$</p>
+                            </div>
+                            <div class="space-y-2">
+                                <h4 class="font-bold">Gaussian (Normal)</h4>
+                                <p class="text-sm">The "Bell Curve", defined by $\mu$ and $\sigma^2$.</p>
+                                <p class="text-sm">$$f(x) = \frac{1}{\sigma\sqrt{2\pi}}
+                                    e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2}$$</p>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+
+            </article>
+        </div>
+    </div>
+
+</body>
+
+</html>
