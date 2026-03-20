@@ -196,6 +196,36 @@
                 margin-bottom: 0.5rem;
             }
         }
+
+        .image-popup {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            z-index: 1000;
+            max-width: 320px;
+            max-height: 240px;
+            border-radius: 6px;
+            border: 1px solid var(--highlight-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        .image-popup.visible {
+            opacity: 1;
+        }
+
+        .image-popup img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            display: block;
+        }
+
+        .hover-img {
+            cursor: help;
+            border-bottom: 1px dashed var(--text-light);
+        }
     </style>
 </head>
 
@@ -220,11 +250,11 @@
         </header>
 
         <section class="intro">
-            <p>loves working on <span class="highlight">rl</span>, <span class="highlight">maths</span>, <span
-                    class="highlight">physics</span>, and <span class="highlight">myself</span>.</p>
-            <p>currently working as a <span class="highlight">remote research intern</span> at <span
-                    class="highlight">Osaka University</span>.</p>
-            <p>exploring ml <span class="highlight">as of 2025</span>.</p>
+            <p>loves working on <span class="highlight hover-img" data-img="media/portfolio/rl.jpg">rl</span>, <span class="highlight hover-img" data-img="media/portfolio/infinity.jpg">maths</span>, <span
+                    class="highlight hover-img" data-img="media/portfolio/time.jpg">physics</span>, and <span class="highlight hover-img" data-img="media/portfolio/who.jpg">myself</span>.</p>
+            <p>currently working as a <span class="highlight hover-img" data-img="media/portfolio/warrior.jpg">remote research intern</span> at <span
+                    class="highlight hover-img" data-img="media/portfolio/osaka.jpg">Osaka University</span>.</p>
+            <p>exploring ml <span class="highlight hover-img" data-img="media/portfolio/rest.jpg">as of 2025</span>.</p>
         </section>
 
         <section class="quick-links">
@@ -271,6 +301,49 @@
             </div> -->
         </section>
     </main>
+
+    <div class="image-popup" id="imagePopup">
+        <img src="" alt="Preview" id="popupImage">
+    </div>
+
+    <script>
+        const popup = document.getElementById('imagePopup');
+        const popupImg = document.getElementById('popupImage');
+        
+        const hoverTargets = document.querySelectorAll('.hover-img');
+        
+        hoverTargets.forEach(target => {
+            target.addEventListener('mouseenter', (e) => {
+                const imgSrc = target.getAttribute('data-img');
+                if (imgSrc) {
+                    popupImg.src = imgSrc;
+                    popup.classList.add('visible');
+                }
+            });
+            
+            target.addEventListener('mousemove', (e) => {
+                const offsetX = 20;
+                const offsetY = 20;
+                let x = e.clientX + offsetX;
+                let y = e.clientY + offsetY;
+                
+                const rect = popup.getBoundingClientRect();
+                if (x + rect.width > window.innerWidth) {
+                    x = e.clientX - rect.width - offsetX;
+                }
+                if (y + rect.height > window.innerHeight) {
+                    y = e.clientY - rect.height - offsetY;
+                }
+                
+                popup.style.left = x + 'px';
+                popup.style.top = y + 'px';
+            });
+            
+            target.addEventListener('mouseleave', () => {
+                popup.classList.remove('visible');
+            });
+        });
+    </script>
 
 </body>
 
