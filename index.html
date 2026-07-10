@@ -226,7 +226,46 @@
             cursor: help;
             border-bottom: 1px dashed var(--text-light);
         }
+        .cal-section {
+            margin-top: 4rem;
+        }
+
+        .cal-section h2 {
+            font-weight: normal;
+            font-size: 1em;
+            margin-bottom: 2rem;
+        }
+
+        #cal-inline {
+            min-height: 500px;
+            width: 100%;
+        }
     </style>
+    <script>
+        (function (C, A, L) {
+            let p = function(a, ar) { a.q.push(ar); };
+            let d = C.document;
+            C.Cal = C.Cal || function() {
+                let cal = C.Cal;
+                let ar = arguments;
+                if (!cal.loaded) {
+                    cal.ns = {};
+                    cal.q = cal.q || [];
+                    d.head.appendChild(d.createElement("script")).src = A;
+                    cal.loaded = true;
+                }
+                if (ar[0] === L) {
+                    const api = function() { p(api, arguments); };
+                    const namespace = ar[1];
+                    api.q = api.q || [];
+                    typeof namespace === "string" ? (cal.ns[namespace] = api) : p(cal, ar);
+                    return;
+                }
+                p(cal, ar);
+            };
+        })(window, "https://app.cal.com/embed/embed.js", "init");
+        Cal("init", {origin:"https://cal.com"});
+    </script>
 </head>
 
 <body>
@@ -300,6 +339,11 @@
                 </div>
             </div> -->
         </section>
+
+        <section id="calendar" class="cal-section">
+            <h2>book a call &rarr;</h2>
+            <div id="cal-inline"></div>
+        </section>
     </main>
 
     <div class="image-popup" id="imagePopup">
@@ -343,6 +387,12 @@
                 popup.classList.remove('visible');
             });
         });
+
+        Cal("inline", {
+            elementOrSelector: "#cal-inline",
+            calLink: "tm23cal"
+        });
+        Cal("ui", {theme: "dark"});
     </script>
 
 </body>
